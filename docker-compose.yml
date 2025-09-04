@@ -1,0 +1,30 @@
+services:
+  develop:
+    profiles:
+      - develop
+    build:
+      context: .
+      target: develop
+      args:
+        UID: ${LOCAL_UID:-1000}
+        GID: ${LOCAL_GID:-1000}
+    volumes:
+      - .:/app
+      - pip-cache:/home/python/.cache/pip
+    command: bash
+    stdin_open: true
+    tty: true
+
+  app:
+    profiles:
+      - app
+    build:
+      context: .
+      target: app
+      args:
+        UID: ${LOCAL_UID:-1000}
+        GID: ${LOCAL_GID:-1000}
+    volumes:
+      - ./data:/data
+volumes:
+  pip-cache:
