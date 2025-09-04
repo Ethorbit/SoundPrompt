@@ -18,27 +18,13 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-FROM python:3.11 AS base
-ARG UID=1000
-ARG GID=1000
-COPY --chown=${UID}:${GID} requirements.txt .
-RUN groupadd -g ${GID} python &&\
-    useradd -m -g ${GID} -u ${UID} python &&\
-    pip install -r requirements.txt
-
-
-FROM base AS develop
-WORKDIR /app
-VOLUME /app
-COPY --chown=${UID}:${GID} ./requirements-dev.txt .
-RUN pip install -r requirements-dev.txt
-USER ${UID}:${GID}
-ENTRYPOINT [ "bash" ]
-
-
-FROM base AS app
-WORKDIR /home/python
-COPY --chown=${UID}:${GID} src .
-USER ${UID}:${GID}
-ENTRYPOINT [ "python" ]
-CMD [ "./src/main.py" ]
+repos:
+  - repo: https://github.com/arkinmodi/add-license-header
+    rev: v2.4.0
+    hooks:
+      - id: add-license-header
+        args:
+          - --unmanaged
+          - --exit-zero-if-unsupported
+          - --license-file
+          - GPL-LICENSE.template
