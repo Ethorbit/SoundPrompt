@@ -1,3 +1,4 @@
+# LICENSE HEADER MANAGED BY add-license-header
 #
 # Copyright (C) 2025 Ethorbit
 #
@@ -18,6 +19,8 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+__pycache__
 .git
 .cache
+venv
 data

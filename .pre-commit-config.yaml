@@ -1,3 +1,4 @@
+# LICENSE HEADER MANAGED BY add-license-header
 #
 # Copyright (C) 2025 Ethorbit
 #
@@ -24,7 +25,6 @@ repos:
     hooks:
       - id: add-license-header
         args:
-          - --unmanaged
           - --exit-zero-if-unsupported
           - --license-file
           - GPL-LICENSE.template

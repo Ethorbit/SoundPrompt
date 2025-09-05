@@ -19,32 +19,18 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-FROM python:3.11 AS base
-ARG UID=1000
-ARG GID=1000
-ENV SENTENCE_TRANSFORMER_MODEL="all-MiniLM-L6-v2"
-COPY --chown=${UID}:${GID} requirements.txt .
-RUN groupadd -g ${GID} python &&\
-    useradd -m -g ${GID} -u ${UID} python &&\
-    pip install -r requirements.txt
+import tomllib
+from pathlib import Path
+
+script_dir = Path(__file__).parent
+config_path = script_dir.parent / "config.toml"
 
 
-FROM base AS develop
-WORKDIR /app
-VOLUME /app
-COPY --chown=${UID}:${GID} ./requirements-dev.txt .
-RUN pip install -r requirements-dev.txt
-USER ${UID}:${GID}
-ENTRYPOINT [ "bash" ]
+def load_config():
+    if not config_path.exists():
+        raise FileNotFoundError(
+            f"config.toml missing, needed at {config_path}"
+        )
 
-
-FROM base AS app
-WORKDIR /home/python
-VOLUME /data
-COPY --chown=${UID}:${GID} src .
-USER ${UID}:${GID}
-RUN python -c "from sentence_transformers \
-    import SentenceTransformer; \
-    SentenceTransformer('${SENTENCE_TRANSFORMER_MODEL}')"
-ENTRYPOINT [ "python" ]
-CMD [ "./src/main.py" ]
+    with open(config_path, "rb") as f:
+        return tomllib.load(f)
