@@ -59,9 +59,7 @@ files = [
         "hash":
         "a3f5b8c2d9e1f407b6c3e2a1d4f9b8c7e1a2f3d4c5b6a7e8f9d0c1b2a3e4f5d6",
         "tags": [
-            "Hi",
-            "Bye",
-            "Thanks"
+            "Hi"
         ]
     },
     {
