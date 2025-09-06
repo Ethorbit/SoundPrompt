@@ -4,26 +4,29 @@
 #
 # This file is part of SoundPrompt.
 #
-# SoundPrompt is free software: you can redistribute it and/or 
-# modify it under the terms of the GNU General Public License 
-# as published by the Free Software Foundation, either version 3 
-# of the License, or (at your option) any later version. 
+# SoundPrompt is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation, either version 3
+# of the License, or (at your option) any later version.
 #
-# SoundPrompt is distributed in the hope that it will be useful, 
-# but WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-# See the GNU General Public License for more details. 
+# SoundPrompt is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
 #
-# You should have received a copy of the 
-# GNU General Public License along with SoundPrompt. 
+# You should have received a copy of the
+# GNU General Public License along with SoundPrompt.
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+import args
 import tomllib
 from pathlib import Path
 
 script_dir = Path(__file__).parent
 config_path = script_dir.parent / "config.toml"
+
+args = args.get_args()
 
 
 def load_config():
@@ -33,4 +36,9 @@ def load_config():
         )
 
     with open(config_path, "rb") as f:
-        return tomllib.load(f)
+        config = tomllib.load(f)
+
+        if args.db_path:
+            config["general"]["db_dir"] = args.db_path
+
+        return config

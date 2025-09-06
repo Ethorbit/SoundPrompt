@@ -19,30 +19,36 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-import args
-import data
-from config import load_config
-from sentence_transformers import SentenceTransformer
-config = load_config()
+from pathlib import Path
+from argparse import ArgumentParser, Namespace
 
-model_name = config["general"]["model_name"]
-model = SentenceTransformer(model_name)
+parser = ArgumentParser(
+    prog="SoundPrompt",
+    description="Your sounds, triggered by AI"
+)
 
-prompt = "rofl"
+parser.add_argument(
+    "-s",
+    "--save",
+    type=Path,
+    help="Save a sound library"
+)
 
-args = args.get_args()
+parser.add_argument(
+    "-l",
+    "--load",
+    type=Path,
+    help="Load a sound library"
+)
 
-if args.save:
-    data.update_collection(model, args.save)
+parser.add_argument(
+    "--db-path",
+    type=Path,
+    help="Path to database directory"
+)
 
-if args.load:
-    collection = data.load_collection(args.load)
+parsed_args = parser.parse_args()
 
-    # user prompts
-    prompt_embedding = model.encode(prompt)
-    collection_query = collection.query(
-        query_embeddings=[prompt_embedding],
-        n_results=10
-    )
 
-    print(collection_query["metadatas"])
+def get_args() -> Namespace:
+    return parsed_args

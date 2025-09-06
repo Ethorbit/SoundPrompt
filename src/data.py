@@ -41,6 +41,7 @@
 # and get the closest annoy embedding match, use metadata db
 # to get the filename: play the sound file!
 
+import re
 import chromadb
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -94,12 +95,24 @@ class Metadata():
         return asdict(self)
 
 
-def create_key(file_hash: str, tag: str):
+def create_key(file_hash: str, tag: str) -> str:
     return file_hash + "_" + tag
 
 
-def update_collection(model: SentenceTransformer, library_name: str):
-    collection = client.get_or_create_collection(library_name)
+def create_library_name(library_dir: Path) -> str:
+    pattern = re.compile(r"(\s|\W)")
+    return re.sub(pattern, "_", str(library_dir))
+
+
+def update_collection(model: SentenceTransformer, library_dir: Path):
+    collection = client.get_or_create_collection(
+        create_library_name(library_dir)
+    )
+
+    # pattern search txt files
+
+    # pattern search files with same filename (no ext)
+    # get first valid audio file from pattern
 
     # If file hash not present
     # -> new file
@@ -131,5 +144,5 @@ def update_collection(model: SentenceTransformer, library_name: str):
     # remove entries for files that aren't found
 
 
-def load_collection(library_name: str) -> chromadb.Collection:
+def load_collection(library_name: Path) -> chromadb.Collection:
     return client.get_collection(library_name)
