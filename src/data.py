@@ -144,5 +144,7 @@ def update_collection(model: SentenceTransformer, library_dir: Path):
     # remove entries for files that aren't found
 
 
-def load_collection(library_name: Path) -> chromadb.Collection:
-    return client.get_collection(library_name)
+def load_collection(library_dir: Path) -> chromadb.Collection:
+    return client.get_collection(
+        create_library_name(library_dir)
+    )
