@@ -20,6 +20,7 @@
 #
 
 import args
+from pathlib import Path
 from data import Data
 from config import load_config
 from sentence_transformers import SentenceTransformer
@@ -34,8 +35,8 @@ args = args.get_args()
 
 if args.save or args.load:
     data = Data(
-        data_directory=config["general"]["db_dir"],
-        library_directory=(args.save or args.load)
+        data_directory=Path(config["general"]["db_dir"]),
+        library_directory=Path(args.save or args.load)
     )
 
 if args.save:
@@ -45,7 +46,7 @@ if args.load:
     collection = data.get_collection()
 
     # user prompts
-    prompt_embedding = model.encode(prompt)
+    prompt_embedding = model.encode(prompt.lower())
     collection_query = collection.query(
         query_embeddings=[prompt_embedding],
         n_results=10
@@ -59,3 +60,12 @@ if args.load:
     # for a file to better handle multiple matching tags.
     #
     # NOTE: this can all be done with current data implementation
+    #
+    # Example:
+    # if you say "rubber squeaking" and there is:
+    # 1. mouse, squeaking
+    # 2. toy, squeaking
+    # the more likely match SHOULD be the toy since it's
+    # inanimate like rubber, but with the current implementation,
+    # BOTH are matched with "squeaking", and the mouse
+    # might play

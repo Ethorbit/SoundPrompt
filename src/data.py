@@ -47,35 +47,35 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
-files = [
-    {
-        "file": "man-says-hello.wav",
-        "hash":
-        "a3f5b8c2d9e1f407b6c3e2a1d4f9b8c7e1a2f3d4c5b6a7e8f9d0c1b2a3e4f5d6",
-        "tags": [
-            "Hi"
-        ]
-    },
-    {
-        "file": "yell-bye.wav",
-        "hash":
-        "c7d9e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0",
-        "tags": [
-            "Goodbye",
-            "Leaving"
-        ]
-    },
-    {
-        "file": "haha.wav",
-        "hash":
-        "f1e2d3c4b5a6978877665544332211ffeeddccbbaa99887766554433221100aa",
-        "tags": [
-            "Laughing",
-            "Happy",
-            "Humor"
-        ]
-    }
-]
+# files = [
+#     {
+#         "file": "man-says-hello.wav",
+#         "hash":
+#         "a3f5b8c2d9e1f407b6c3e2a1d4f9b8c7e1a2f3d4c5b6a7e8f9d0c1b2a3e4f5d6",
+#         "tags": [
+#             "Hi"
+#         ]
+#     },
+#     {
+#         "file": "yell-bye.wav",
+#         "hash":
+#         "c7d9e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0",
+#         "tags": [
+#             "Goodbye",
+#             "Leaving"
+#         ]
+#     },
+#     {
+#         "file": "haha.wav",
+#         "hash":
+#         "f1e2d3c4b5a6978877665544332211ffeeddccbbaa99887766554433221100aa",
+#         "tags": [
+#             "Laughing",
+#             "Happy",
+#             "Humor"
+#         ]
+#     }
+# ]
 
 
 @dataclass
@@ -100,6 +100,10 @@ class Data:
         data_directory: Path,
         library_directory: Path
     ):
+        for d in [data_directory, library_directory]:
+            if not d.exists():
+                raise FileNotFoundError(f"{d} doesn't exist.")
+
         self.directory = data_directory
         self.library_directory = library_directory
         self.set_collection_name(library_directory)
@@ -121,10 +125,12 @@ class Data:
         )
 
         # pattern search txt files
-
+        #
         # pattern search files with same filename (no ext)
         # get first valid audio file from pattern
-
+        #
+        # parse txt file tags by using comma as a delimeter
+        #
         # If file hash not present
         # -> new file
         # -> add all tag embeddings
@@ -134,25 +140,27 @@ class Data:
         # -> if differs
         # -> re-add all tag embeddings
         #
-        for entry in files:
-            # <do the checks here first!>
-            for tag in entry["tags"]:
-                key = self.create_key(
-                    file_hash=entry["hash"],
-                    tag=tag
-                )
-                embedding = model.encode(tag)
-                metadata = Metadata(
-                    file=entry["file"],
-                    file_hash=entry["hash"],
-                    tag=tag
-                ).to_dict()
+        # add an auto tag which is the filename itself
 
-                collection.add(
-                    ids=[key],
-                    embeddings=[embedding],
-                    metadatas=[metadata]
-                )
+        # for entry in files:
+        #     # <do the checks here first!>
+        #     for tag in entry["tags"]:
+        #         key = self.create_key(
+        #             file_hash=entry["hash"],
+        #             tag=tag
+        #         )
+        #         embedding = model.encode(tag.lower())
+        #         metadata = Metadata(
+        #             file=entry["file"],
+        #             file_hash=entry["hash"],
+        #             tag=tag
+        #         ).to_dict()
+
+        #         collection.add(
+        #             ids=[key],
+        #             embeddings=[embedding],
+        #             metadatas=[metadata]
+        #         )
 
         # Iterate all metadata file hashes
         # remove entries for files that aren't found
