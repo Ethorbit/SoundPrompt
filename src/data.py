@@ -46,13 +46,6 @@ import chromadb
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
-from config import load_config
-
-config = load_config()
-
-client = chromadb.PersistentClient(
-    path=Path(config["general"]["db_dir"])
-)
 
 files = [
     {
@@ -95,56 +88,74 @@ class Metadata():
         return asdict(self)
 
 
-def create_key(file_hash: str, tag: str) -> str:
-    return file_hash + "_" + tag
+class Data:
+    client: chromadb.PersistentClient
+    directory: Path
+    library_directory: Path
+    key: str
+    collection_name: str
 
+    def __init__(
+        self,
+        data_directory: Path,
+        library_directory: Path
+    ):
+        self.directory = data_directory
+        self.library_directory = library_directory
+        self.set_collection_name(library_directory)
+        self.client = chromadb.PersistentClient(
+            path=Path(data_directory)
+        )
 
-def create_library_name(library_dir: Path) -> str:
-    pattern = re.compile(r"(\s|\W)")
-    return re.sub(pattern, "_", str(library_dir))
+    def set_collection_name(self, value: str):
+        # Chroma collection shouldn't consist of spaces / symbols
+        pattern = re.compile(r"(\s|\W)")
+        self.collection_name = re.sub(pattern, "_", str(value))
 
+    def create_key(self, file_hash: str, tag: str) -> str:
+        return file_hash + "_" + tag
 
-def update_collection(model: SentenceTransformer, library_dir: Path):
-    collection = client.get_or_create_collection(
-        create_library_name(library_dir)
-    )
+    def update(self, model: SentenceTransformer):
+        collection = self.client.get_or_create_collection(
+            self.collection_name
+        )
 
-    # pattern search txt files
+        # pattern search txt files
 
-    # pattern search files with same filename (no ext)
-    # get first valid audio file from pattern
+        # pattern search files with same filename (no ext)
+        # get first valid audio file from pattern
 
-    # If file hash not present
-    # -> new file
-    # -> add all tag embeddings
-    #
-    # If file hash present
-    # -> check tags
-    # -> if differs
-    # -> re-add all tag embeddings
-    #
-    for entry in files:
-        # <do the checks here first!>
-        for tag in entry["tags"]:
-            key = create_key(entry["hash"], tag)
-            embedding = model.encode(tag)
-            metadata = Metadata(
-                file=entry["file"],
-                file_hash=entry["hash"],
-                tag=tag
-            ).to_dict()
+        # If file hash not present
+        # -> new file
+        # -> add all tag embeddings
+        #
+        # If file hash present
+        # -> check tags
+        # -> if differs
+        # -> re-add all tag embeddings
+        #
+        for entry in files:
+            # <do the checks here first!>
+            for tag in entry["tags"]:
+                key = self.create_key(
+                    file_hash=entry["hash"],
+                    tag=tag
+                )
+                embedding = model.encode(tag)
+                metadata = Metadata(
+                    file=entry["file"],
+                    file_hash=entry["hash"],
+                    tag=tag
+                ).to_dict()
 
-            collection.add(
-                ids=[key],
-                embeddings=[embedding],
-                metadatas=[metadata]
-            )
+                collection.add(
+                    ids=[key],
+                    embeddings=[embedding],
+                    metadatas=[metadata]
+                )
 
-    # Iterate all metadata file hashes
-    # remove entries for files that aren't found
+        # Iterate all metadata file hashes
+        # remove entries for files that aren't found
 
-
-def load_collection(library_dir: Path) -> chromadb.Collection:
-    return client.get_collection(
-        create_library_name(library_dir)
-    )
+    def get_collection(self) -> chromadb.Collection:
+        return self.client.get_collection(self.collection_name)

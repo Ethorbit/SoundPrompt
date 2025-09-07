@@ -49,6 +49,9 @@ parser.add_argument(
 
 parsed_args = parser.parse_args()
 
+if (parsed_args.load and parsed_args.save):
+    raise ValueError("You cannot load and save at the same time!")
+
 
 def get_args() -> Namespace:
     return parsed_args

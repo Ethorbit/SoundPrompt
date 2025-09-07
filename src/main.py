@@ -20,7 +20,7 @@
 #
 
 import args
-import data
+from data import Data
 from config import load_config
 from sentence_transformers import SentenceTransformer
 config = load_config()
@@ -32,11 +32,16 @@ prompt = "rofl"
 
 args = args.get_args()
 
+data = Data(
+    data_directory=config["general"]["db_dir"],
+    library_directory=(args.save or args.load)
+)
+
 if args.save:
-    data.update_collection(model, args.save)
+    data.update(model=model)
 
 if args.load:
-    collection = data.load_collection(args.load)
+    collection = data.get_collection()
 
     # user prompts
     prompt_embedding = model.encode(prompt)
@@ -46,3 +51,10 @@ if args.load:
     )
 
     print(collection_query["metadatas"])
+
+    # TODO: Implement cumulative scoring per file
+    # Right now, retrieval picks the single closest tag embedding.
+    # In the future, consider summing/aggregating similarities of all tags
+    # for a file to better handle multiple matching tags.
+    #
+    # NOTE: this can all be done with current data implementation

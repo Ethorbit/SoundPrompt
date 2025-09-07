@@ -22,6 +22,8 @@
 FROM python:3.11 AS base
 ARG UID=1000
 ARG GID=1000
+# TODO: COPY the config.toml and read its model value
+# this var is obsolete!
 ENV SENTENCE_TRANSFORMER_MODEL="all-MiniLM-L6-v2"
 COPY --chown=${UID}:${GID} requirements.txt .
 RUN groupadd -g ${GID} python &&\
