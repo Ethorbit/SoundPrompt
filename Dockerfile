@@ -22,9 +22,6 @@
 FROM python:3.11 AS base
 ARG UID=1000
 ARG GID=1000
-# TODO: COPY the config.toml and read its model value
-# this var is obsolete!
-ENV SENTENCE_TRANSFORMER_MODEL="all-MiniLM-L6-v2"
 COPY --chown=${UID}:${GID} requirements.txt .
 RUN groupadd -g ${GID} python &&\
     useradd -m -g ${GID} -u ${UID} python &&\
@@ -43,10 +40,11 @@ ENTRYPOINT [ "bash" ]
 FROM base AS app
 WORKDIR /home/python
 VOLUME /input /output
-COPY --chown=${UID}:${GID} src .
+COPY --chown=${UID}:${GID} src ./src
+COPY --chown=${UID}:${GID} config.toml .
 USER ${UID}:${GID}
-RUN python -c "from sentence_transformers \
-    import SentenceTransformer; \
-    SentenceTransformer('${SENTENCE_TRANSFORMER_MODEL}')"
+# Run the script in the image to
+# preinstall the model
+RUN python src/main.py
 ENTRYPOINT [ "python" ]
-CMD [ "./src/main.py" ]
+CMD [ "./src/main.py $@" ]

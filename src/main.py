@@ -32,10 +32,11 @@ prompt = "rofl"
 
 args = args.get_args()
 
-data = Data(
-    data_directory=config["general"]["db_dir"],
-    library_directory=(args.save or args.load)
-)
+if args.save or args.load:
+    data = Data(
+        data_directory=config["general"]["db_dir"],
+        library_directory=(args.save or args.load)
+    )
 
 if args.save:
     data.update(model=model)
