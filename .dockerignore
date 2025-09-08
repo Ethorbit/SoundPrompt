@@ -19,6 +19,7 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+resources
 __pycache__
 .git
 .cache
