@@ -20,7 +20,6 @@
 #
 
 from config import args, config as config_import
-from pathlib import Path
 from data import Data
 from sentence_transformers import SentenceTransformer
 cfg = config_import.load_config()
@@ -34,8 +33,8 @@ args = args.get_args()
 
 if args.save or args.load:
     data = Data(
-        data_directory=Path(cfg["general"]["db_dir"]),
-        library_directory=Path(args.save or args.load)
+        data_directory=cfg["general"]["db_dir"],
+        library_directory=(args.save or args.load)
     )
 
 if args.save:

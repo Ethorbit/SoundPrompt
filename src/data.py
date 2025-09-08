@@ -41,10 +41,10 @@
 # and get the closest annoy embedding match, use metadata db
 # to get the filename: play the sound file!
 
+import os
 import re
 import chromadb
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
 # files = [
@@ -78,6 +78,52 @@ from sentence_transformers import SentenceTransformer
 # ]
 
 
+class RecursiveScanDir:
+    path: str
+    only_files: bool
+
+    def __init__(
+        self,
+        path: str,
+        extensions: str | list[str] | None = None,
+        only_files: bool = False
+    ):
+        self.path = path
+        if extensions is not None:
+            if isinstance(extensions, str):
+                extensions = [extensions]
+
+            # Extensions: normalize lowercase & dot
+            self.extensions = {
+                ext.lower()
+                if ext.startswith(".") else f".{ext.lower()}"
+                for ext in extensions
+            }
+        self.only_files = only_files
+
+    def __iter__(self):
+        yield from self._scan(self.path)
+
+    def _scan(self, path: str):
+        for entry in os.scandir(path):
+            is_dir = entry.is_dir(follow_symlinks=False)
+
+            if is_dir:  # recursive, add subdir's contents
+                yield from self._scan(entry.path)
+            else:
+                if self.extensions:
+                    _, ext = os.path.splitext(entry.name)
+
+                    if ext.lower() in self.extensions:
+                        yield entry.path
+                else:
+                    yield entry.path
+
+            # Add the dir itself too if allowed
+            if not self.only_files and is_dir:
+                yield entry.path
+
+
 @dataclass
 class Metadata():
     file: str
@@ -90,27 +136,27 @@ class Metadata():
 
 class Data:
     client: chromadb.PersistentClient
-    directory: Path
-    library_directory: Path
+    directory: str
+    library_directory: str
     key: str
     collection_name: str
 
     def __init__(
         self,
-        data_directory: Path,
-        library_directory: Path
+        data_directory: str,
+        library_directory: str
     ):
         for d in [data_directory, library_directory]:
-            if not d.exists():
+            if not os.path.exists(d):
                 raise FileNotFoundError(f"{d} doesn't exist.")
-            if not d.is_dir():
+            if not os.path.isdir(d):
                 raise NotADirectoryError(f"{d} is not a directory.")
 
         self.directory = data_directory
         self.library_directory = library_directory
         self.set_collection_name(library_directory)
         self.client = chromadb.PersistentClient(
-            path=Path(data_directory)
+            path=data_directory
         )
 
     def set_collection_name(self, value: str):
@@ -126,12 +172,6 @@ class Data:
             self.collection_name
         )
 
-        # pattern search txt files
-        #
-        # pattern search files with same filename (no ext)
-        # get first valid audio file from pattern
-        #
-        # parse txt file tags by using comma as a delimeter
         #
         # If file hash not present
         # -> new file
@@ -144,7 +184,13 @@ class Data:
         #
         # add an auto tag which is the filename itself
 
-        
+        files = RecursiveScanDir(
+            self.library_directory,
+            extensions="txt",
+            only_files=True
+        )
+        for file in files:
+            print(file)
 
         # for entry in files:
         #     # <do the checks here first!>
