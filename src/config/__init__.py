@@ -18,5 +18,3 @@
 # GNU General Public License along with SoundPrompt.
 # If not, see <https://www.gnu.org/licenses/>.
 #
-
-from .config import load_config
