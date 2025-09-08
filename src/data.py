@@ -103,6 +103,8 @@ class Data:
         for d in [data_directory, library_directory]:
             if not d.exists():
                 raise FileNotFoundError(f"{d} doesn't exist.")
+            if not d.is_dir():
+                raise NotADirectoryError(f"{d} is not a directory.")
 
         self.directory = data_directory
         self.library_directory = library_directory
@@ -141,6 +143,8 @@ class Data:
         # -> re-add all tag embeddings
         #
         # add an auto tag which is the filename itself
+
+        
 
         # for entry in files:
         #     # <do the checks here first!>
