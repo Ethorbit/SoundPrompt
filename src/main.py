@@ -20,7 +20,7 @@
 #
 
 from config import args, config as config_import
-from data import Data
+from data import database
 from sentence_transformers import SentenceTransformer
 cfg = config_import.load_config()
 
@@ -32,7 +32,7 @@ prompt = "rofl"
 args = args.get_args()
 
 if args.save or args.load:
-    data = Data(
+    data = database.Data(
         data_directory=cfg["general"]["db_dir"],
         library_directory=(args.save or args.load)
     )

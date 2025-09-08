@@ -44,6 +44,7 @@
 import os
 import re
 import chromadb
+from .filesystem import RecursiveScanDir
 from dataclasses import asdict, dataclass
 from sentence_transformers import SentenceTransformer
 
@@ -76,52 +77,6 @@ from sentence_transformers import SentenceTransformer
 #         ]
 #     }
 # ]
-
-
-class RecursiveScanDir:
-    path: str
-    only_files: bool
-
-    def __init__(
-        self,
-        path: str,
-        extensions: str | list[str] | None = None,
-        only_files: bool = False
-    ):
-        self.path = path
-        if extensions is not None:
-            if isinstance(extensions, str):
-                extensions = [extensions]
-
-            # Extensions: normalize lowercase & dot
-            self.extensions = {
-                ext.lower()
-                if ext.startswith(".") else f".{ext.lower()}"
-                for ext in extensions
-            }
-        self.only_files = only_files
-
-    def __iter__(self):
-        yield from self._scan(self.path)
-
-    def _scan(self, path: str):
-        for entry in os.scandir(path):
-            is_dir = entry.is_dir(follow_symlinks=False)
-
-            if is_dir:  # recursive, add subdir's contents
-                yield from self._scan(entry.path)
-            else:
-                if self.extensions:
-                    _, ext = os.path.splitext(entry.name)
-
-                    if ext.lower() in self.extensions:
-                        yield entry.path
-                else:
-                    yield entry.path
-
-            # Add the dir itself too if allowed
-            if not self.only_files and is_dir:
-                yield entry.path
 
 
 @dataclass
@@ -184,13 +139,15 @@ class Data:
         #
         # add an auto tag which is the filename itself
 
-        files = RecursiveScanDir(
+        file_entries = RecursiveScanDir(
             self.library_directory,
             extensions="txt",
             only_files=True
         )
-        for file in files:
-            print(file)
+
+        for file_entry in file_entries:
+            print(file_entry.name)
+            print(file_entry.path)
 
         # for entry in files:
         #     # <do the checks here first!>
