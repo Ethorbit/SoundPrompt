@@ -19,12 +19,12 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-import args
+from . import args
 import tomllib
 from pathlib import Path
 
 script_dir = Path(__file__).parent
-config_path = script_dir.parent / "config.toml"
+config_path = script_dir.parent / "../config.toml"
 
 args = args.get_args()
 
@@ -36,9 +36,9 @@ def load_config():
         )
 
     with open(config_path, "rb") as f:
-        config = tomllib.load(f)
+        cfg = tomllib.load(f)
 
         if args.db_path:
-            config["general"]["db_dir"] = args.db_path
+            cfg["general"]["db_dir"] = args.db_path
 
-        return config
+        return cfg

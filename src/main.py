@@ -19,14 +19,13 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-import args
+from config import args, config as config_import
 from pathlib import Path
 from data import Data
-from config import load_config
 from sentence_transformers import SentenceTransformer
-config = load_config()
+cfg = config_import.load_config()
 
-model_name = config["general"]["model_name"]
+model_name = cfg["general"]["model_name"]
 model = SentenceTransformer(model_name)
 
 prompt = "rofl"
@@ -35,7 +34,7 @@ args = args.get_args()
 
 if args.save or args.load:
     data = Data(
-        data_directory=Path(config["general"]["db_dir"]),
+        data_directory=Path(cfg["general"]["db_dir"]),
         library_directory=Path(args.save or args.load)
     )
 
