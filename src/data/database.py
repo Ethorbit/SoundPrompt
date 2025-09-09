@@ -41,10 +41,9 @@
 # and get the closest annoy embedding match, use metadata db
 # to get the filename: play the sound file!
 
-import os
 import re
 import chromadb
-from .filesystem import RecursiveScanDir
+from . import filesystem
 from dataclasses import asdict, dataclass
 from sentence_transformers import SentenceTransformer
 
@@ -102,10 +101,7 @@ class Data:
         library_directory: str
     ):
         for d in [data_directory, library_directory]:
-            if not os.path.exists(d):
-                raise FileNotFoundError(f"{d} doesn't exist.")
-            if not os.path.isdir(d):
-                raise NotADirectoryError(f"{d} is not a directory.")
+            filesystem.validate_directory(d)
 
         self.directory = data_directory
         self.library_directory = library_directory
@@ -139,7 +135,7 @@ class Data:
         #
         # add an auto tag which is the filename itself
 
-        file_entries = RecursiveScanDir(
+        file_entries = filesystem.RecursiveScanDir(
             self.library_directory,
             extensions="txt",
             only_files=True

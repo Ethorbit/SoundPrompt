@@ -67,3 +67,10 @@ class RecursiveScanDir:
             # Add the dir itself too if allowed
             if not self.only_files and is_dir:
                 yield entry
+
+
+def validate_directory(directory: str):
+    if not os.path.exists(directory):
+        raise FileNotFoundError(f"{directory} doesn't exist.")
+    if not os.path.isdir(directory):
+        raise NotADirectoryError(f"{directory} is not a directory.")
