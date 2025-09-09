@@ -20,7 +20,7 @@
 #
 
 import os
-from collections.abc import Generator
+from typing import Generator
 
 
 class RecursiveScanDir:
@@ -46,10 +46,16 @@ class RecursiveScanDir:
             }
         self.only_files = only_files
 
-    def __iter__(self) -> Generator[os.DirEntry, None, None]:
+    def __iter__(self) -> Generator[
+            tuple[os.DirEntry, str | None, str | None],
+            None,
+            None]:
         yield from self._scan(self.path)
 
-    def _scan(self, path: str) -> Generator[os.DirEntry, None, None]:
+    def _scan(self, path: str) -> Generator[
+            tuple[os.DirEntry, str | None, str | None],
+            None,
+            None]:
         for entry in os.scandir(path):
             is_dir = entry.is_dir(follow_symlinks=False)
 
@@ -57,20 +63,38 @@ class RecursiveScanDir:
                 yield from self._scan(entry.path)
             else:
                 if self.extensions is not None:
-                    _, ext = os.path.splitext(entry.name)
+                    stem, ext = os.path.splitext(entry.name)
 
                     if ext.lower() in self.extensions:
-                        yield entry
+                        # (we pass the stem & ext so they
+                        # won't have to splitext a sec time)
+                        yield entry, stem, ext
                 else:
-                    yield entry
+                    yield entry, None, None
 
             # Add the dir itself too if allowed
             if not self.only_files and is_dir:
-                yield entry
+                yield entry, None, None
+
+
+def get_dir(file: str):
+    return os.path.dirname(file)
+
+
+def validate_path(path: str):
+    if not os.path.exists(path):
+        raise FileExistsError(f"{path} doesn't exist.")
 
 
 def validate_directory(directory: str):
-    if not os.path.exists(directory):
-        raise FileNotFoundError(f"{directory} doesn't exist.")
+    validate_path(directory)
+
     if not os.path.isdir(directory):
         raise NotADirectoryError(f"{directory} is not a directory.")
+
+
+def validate_file(file: str):
+    validate_path(file)
+
+    if not os.path.isfile(file):
+        raise FileNotFoundError(f"{file} is not a file.")

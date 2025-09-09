@@ -43,6 +43,7 @@
 
 import re
 import chromadb
+import os
 from . import filesystem
 from dataclasses import asdict, dataclass
 from sentence_transformers import SentenceTransformer
@@ -79,13 +80,23 @@ from sentence_transformers import SentenceTransformer
 
 
 @dataclass
-class Metadata():
+class Metadata:
     file: str
     file_hash: str
     tag: str
 
     def to_dict(self):
         return asdict(self)
+
+
+class TaggedFileMissingError(Exception):
+    """
+    Exception raised for when a file associated with a tag is missing.
+    """
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
 
 
 class Data:
@@ -141,9 +152,29 @@ class Data:
             only_files=True
         )
 
-        for file_entry in file_entries:
-            print(file_entry.name)
-            print(file_entry.path)
+        for file_entry, file_stem, file_ext in file_entries:
+            tag_dir = os.path.dirname(file_entry.path)
+            tagged_file_path = os.path.join(tag_dir, file_stem)
+
+            try:
+                filesystem.validate_file(tagged_file_path)
+            except Exception as e:
+                if isinstance(e, FileExistsError):
+                    raise TaggedFileMissingError(
+                        f"Your tag {file_entry.path} was made "
+                        f"for a file that doesn't exist: "
+                        f"{tagged_file_path}\n"
+                        f"Make sure the tag's filename is "
+                        f"EXACTLY the same as the sound's "
+                        f"with .txt appended at the end. "
+                        f"e.g.: awesome-explosion.mp3.txt"
+                    )
+                else:
+                    raise e
+            finally:
+                print(file_stem)
+                print(file_ext)
+                print(file_entry.path)
 
         # for entry in files:
         #     # <do the checks here first!>
