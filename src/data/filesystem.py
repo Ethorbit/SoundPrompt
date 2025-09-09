@@ -24,6 +24,11 @@ from typing import Generator
 
 
 class RecursiveScanDir:
+    """
+    Recursively scan a directory very quickly,
+    optionally filter files and extensions.
+    """
+
     path: str
     only_files: bool
 
@@ -75,6 +80,11 @@ class RecursiveScanDir:
             # Add the dir itself too if allowed
             if not self.only_files and is_dir:
                 yield entry, None, None
+
+
+"""
+Validation for working with essential files
+"""
 
 
 def validate_path(path: str):

@@ -100,6 +100,25 @@ class TaggedFileMissingError(Exception):
 
 
 class Data:
+    """
+    Manages a sound library with tag-based metadata and AI embeddings.
+
+    Responsibilities:
+    - Validate and manage the data and library directories.
+    - Iterate and process tag files and associated audio files.
+    - Store metadata in a database (e.g., SQLite or ChromaDB).
+    - Encode tags using a SentenceTransformer and manage embeddings.
+    - Provide retrieval of data.
+
+    Notes:
+    - Tag files must exactly match the associated audio file name
+    with a '.txt' suffix.
+    - Audio file extensions and tag normalization are handled
+    internally.
+    - Designed to handle large libraries efficiently
+    (hundreds of thousands of files).
+    """
+
     client: chromadb.PersistentClient
     directory: str
     library_directory: str

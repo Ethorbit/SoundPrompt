@@ -19,6 +19,12 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+"""
+Arguments passed via CLI
+Controls behavior and app-specific global settings
+"""
+
+
 from pathlib import Path
 from argparse import ArgumentParser, Namespace
 

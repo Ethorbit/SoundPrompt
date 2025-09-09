@@ -30,6 +30,12 @@ args = args.get_args()
 
 
 def load_config():
+    """
+    Loads the config file, which contains app-specific global settings
+
+    Note: overrides values with CLI args
+    """
+
     if not config_path.exists():
         raise FileNotFoundError(
             f"config.toml missing, needed at {config_path}"
