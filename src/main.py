@@ -33,12 +33,13 @@ args = args.get_args()
 
 if args.save or args.load:
     data = database.Data(
+        model=model,
         data_directory=cfg["general"]["db_dir"],
         library_directory=(args.save or args.load)
     )
 
 if args.save:
-    data.update(model=model)
+    data.update()
 
 if args.load:
     collection = data.get_collection()

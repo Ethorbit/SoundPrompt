@@ -19,64 +19,12 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-# Save a library on demand (folder of sound files
-# each tagged with a tag file consisting of
-# ~1-10 descriptive words)
-#
-# Iterate each file
-# for each file:
-# 1. encode each tag word as a SentenceTransformer embedding
-# add to the annoy database, an iterator variable being the key
-# 2. add entry for each tag word to metadata database,
-# assigning embedding key to the respective sound file
-#
-# So output is two databases:
-# 1. SQLite for human-readable metadata
-# 2. Annoy for SentenceTransformer embeddings
-# in the end, both have a commonality for identification (numerical key)
-#
-# Load an annoy library on demand along with its metadata
-#
-# Take input prompt, encode it as a SentenceTransformer embedding
-# and get the closest annoy embedding match, use metadata db
-# to get the filename: play the sound file!
-
 import re
 import chromadb
 import os
 from . import filesystem
 from dataclasses import asdict, dataclass
 from sentence_transformers import SentenceTransformer
-
-# files = [
-#     {
-#         "file": "man-says-hello.wav",
-#         "hash":
-#         "a3f5b8c2d9e1f407b6c3e2a1d4f9b8c7e1a2f3d4c5b6a7e8f9d0c1b2a3e4f5d6",
-#         "tags": [
-#             "Hi"
-#         ]
-#     },
-#     {
-#         "file": "yell-bye.wav",
-#         "hash":
-#         "c7d9e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0",
-#         "tags": [
-#             "Goodbye",
-#             "Leaving"
-#         ]
-#     },
-#     {
-#         "file": "haha.wav",
-#         "hash":
-#         "f1e2d3c4b5a6978877665544332211ffeeddccbbaa99887766554433221100aa",
-#         "tags": [
-#             "Laughing",
-#             "Happy",
-#             "Humor"
-#         ]
-#     }
-# ]
 
 
 @dataclass
@@ -120,6 +68,7 @@ class Data:
     """
 
     client: chromadb.PersistentClient
+    model: SentenceTransformer
     directory: str
     library_directory: str
     key: str
@@ -127,9 +76,12 @@ class Data:
 
     def __init__(
         self,
+        model: SentenceTransformer,
         data_directory: str,
         library_directory: str
     ):
+        self.model = model
+
         for d in [data_directory, library_directory]:
             filesystem.validate_directory(d)
 
@@ -141,28 +93,40 @@ class Data:
         )
 
     def set_collection_name(self, value: str):
-        # Chroma collection shouldn't consist of spaces / symbols
+        """
+        Sanitizes a string to be a valid ChromaDB Collection name
+        - Replaces symbols and whitespaces with an underscore
+        """
         pattern = re.compile(r"(\s|\W)")
         self.collection_name = re.sub(pattern, "_", str(value))
 
     def create_key(self, file_hash: str, tag: str) -> str:
         return file_hash + "_" + tag
 
-    def update(self, model: SentenceTransformer):
+    def add_file_to_collection(
+        collection: chromadb.Collection,
+        tags_file_path: str,
+        audio_file_path: str
+    ):
+        """
+        Adds a file to a database collection
+        - Adds the tag file path
+        - Adds the audio file path
+        - AI Encodes each of its tags
+        """
+        return
+
+    def update(self):
+        """
+        Updates the library in the database
+        - Iterates all the files
+        - Add missing entries to collection
+        """
+
         collection = self.client.get_or_create_collection(
             self.collection_name
         )
 
-        #
-        # If file hash not present
-        # -> new file
-        # -> add all tag embeddings
-        #
-        # If file hash present
-        # -> check tags
-        # -> if differs
-        # -> re-add all tag embeddings
-        #
         # add an auto tag which is the filename itself
 
         file_entries = filesystem.RecursiveScanDir(
@@ -172,17 +136,18 @@ class Data:
         )
 
         for file_entry, file_stem, file_ext in file_entries:
-            tag_dir = os.path.dirname(file_entry.path)
-            tagged_file_path = os.path.join(tag_dir, file_stem)
+            tags_file_path = file_entry.path
+            tags_dir = os.path.dirname(tags_file_path)
+            audio_file_path = os.path.join(tags_dir, file_stem)
 
             try:
-                filesystem.validate_file(tagged_file_path)
+                filesystem.validate_file(audio_file_path)
             except Exception as e:
                 if isinstance(e, FileExistsError):
                     raise TaggedFileMissingError(
-                        f"Your tag {file_entry.path} was made "
-                        f"for a file that doesn't exist: "
-                        f"{tagged_file_path}\n"
+                        f"Your tag {tags_file_path} was made "
+                        f"for an audio file that doesn't exist: "
+                        f"{audio_file_path}\n"
                         f"Make sure the tag's filename is "
                         f"EXACTLY the same as the sound's "
                         f"with .txt appended at the end. "
@@ -191,10 +156,27 @@ class Data:
                 else:
                     raise e
             finally:
-                print(file_stem)
-                print(file_ext)
-                print(file_entry.path)
+                existing_item = collection.get(
+                    where={
+                        "tags_file_path": tags_file_path,
+                        "audio_file_path": audio_file_path
+                    }
+                )
 
+                if not existing_item["ids"]:
+                    self.add_file_to_collection(
+                        collection=collection,
+                        tags_file_path=tags_file_path,
+                        audio_file_path=audio_file_path
+                    )
+
+                    continue
+
+                # at this point the file exists in collection,
+                # make sure its metadata tags match current tags
+                # if it does, skip it, otherwise redo its entry
+
+        # old dummy code:
         # for entry in files:
         #     # <do the checks here first!>
         #     for tag in entry["tags"]:
