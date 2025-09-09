@@ -77,10 +77,6 @@ class RecursiveScanDir:
                 yield entry, None, None
 
 
-def get_dir(file: str):
-    return os.path.dirname(file)
-
-
 def validate_path(path: str):
     if not os.path.exists(path):
         raise FileExistsError(f"{path} doesn't exist.")
