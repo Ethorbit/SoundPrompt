@@ -27,8 +27,6 @@ cfg = config_import.load_config()
 model_name = cfg["general"]["model_name"]
 model = SentenceTransformer(model_name)
 
-prompt = "rofl"
-
 args = args.get_args()
 
 if args.save or args.load:
@@ -44,14 +42,21 @@ if args.save:
 if args.load:
     collection = data.get_collection()
 
-    # user prompts
-    prompt_embedding = model.encode(prompt.lower())
-    collection_query = collection.query(
-        query_embeddings=[prompt_embedding],
-        n_results=10
-    )
+    while True:
+        try:
+            prompt = input(">>>").lower()
 
-    print(collection_query["metadatas"])
+            # user prompts
+            prompt_embedding = model.encode(prompt.lower())
+            collection_query = collection.query(
+                query_embeddings=[prompt_embedding],
+                n_results=10
+            )
+
+            print(collection_query["metadatas"])
+        except KeyboardInterrupt:
+            print("\nInterrupted. Exiting...")
+            break
 
     # TODO: Implement cumulative scoring per file
     # Right now, retrieval picks the single closest tag embedding.

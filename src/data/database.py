@@ -100,11 +100,18 @@ class Data:
         pattern = re.compile(r"(\s|\W)")
         self.collection_name = re.sub(pattern, "_", str(value))
 
-    def create_key(self, file_hash: str, tag: str) -> str:
-        return file_hash + "_" + tag
+    def create_key(self, filename: str, tag: str) -> str:
+        """
+        Standardized format for collection key
+        Should always be used when saving entries
+        """
 
-    def add_file_to_collection(
+        return filename + "_" + tag
+
+    def collection_add(
+        self,
         collection: chromadb.Collection,
+        tags_file_name: str,
         tags_file_path: str,
         audio_file_path: str
     ):
@@ -114,7 +121,26 @@ class Data:
         - Adds the audio file path
         - AI Encodes each of its tags
         """
-        return
+
+        with open(
+            tags_file_path,
+            mode="r",
+            encoding="utf-8"
+        ) as f:
+            tags = [tag.strip() for tag in f.read().lower().split(",")]
+            for tag in tags:
+                collection.add(
+                    ids=self.create_key(
+                        tags_file_name,
+                        tag
+                    ),
+                    embeddings=[self.model.encode(tag)],
+                    metadatas={
+                        "tag_file": tags_file_path,
+                        "audio_file": audio_file_path,
+                        "tag": tag
+                    }
+                )
 
     def update(self):
         """
@@ -123,9 +149,7 @@ class Data:
         - Add missing entries to collection
         """
 
-        collection = self.client.get_or_create_collection(
-            self.collection_name
-        )
+        collection = self.get_collection(True)
 
         # add an auto tag which is the filename itself
 
@@ -158,47 +182,31 @@ class Data:
             finally:
                 existing_item = collection.get(
                     where={
-                        "tags_file_path": tags_file_path,
-                        "audio_file_path": audio_file_path
+                        "tag_file": tags_file_path,
                     }
                 )
 
                 if not existing_item["ids"]:
-                    self.add_file_to_collection(
+                    self.collection_add(
                         collection=collection,
+                        tags_file_name=file_stem,
                         tags_file_path=tags_file_path,
                         audio_file_path=audio_file_path
                     )
 
                     continue
 
+                print("Skipped. Check tags")
                 # at this point the file exists in collection,
                 # make sure its metadata tags match current tags
                 # if it does, skip it, otherwise redo its entry
 
-        # old dummy code:
-        # for entry in files:
-        #     # <do the checks here first!>
-        #     for tag in entry["tags"]:
-        #         key = self.create_key(
-        #             file_hash=entry["hash"],
-        #             tag=tag
-        #         )
-        #         embedding = model.encode(tag.lower())
-        #         metadata = Metadata(
-        #             file=entry["file"],
-        #             file_hash=entry["hash"],
-        #             tag=tag
-        #         ).to_dict()
-
-        #         collection.add(
-        #             ids=[key],
-        #             embeddings=[embedding],
-        #             metadatas=[metadata]
-        #         )
-
-        # Iterate all metadata file hashes
-        # remove entries for files that aren't found
-
-    def get_collection(self) -> chromadb.Collection:
-        return self.client.get_collection(self.collection_name)
+        # Iterate all file paths
+        # remove entries for files that aren't valid anymore
+        # (otherwise it will try to play invalid sounds)
+    def get_collection(self, create: bool = False) -> chromadb.Collection:
+        return (
+            create and
+            self.client.get_or_create_collection(self.collection_name)
+            or self.client.get_collection(self.collection_name)
+        )
