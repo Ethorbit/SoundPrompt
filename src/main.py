@@ -44,32 +44,67 @@ if args.load:
 
     while True:
         try:
-            prompt = input(">>>").lower()
+            # TODO: make interactive prompt have a history like a terminal
+            prompt = args.prompt or input(">>>").lower()
 
-            # user prompts
             prompt_embedding = model.encode(prompt.lower())
-            collection_query = collection.query(
+            top_n_results = collection.query(
                 query_embeddings=[prompt_embedding],
                 n_results=10
             )
 
-            print(collection_query["metadatas"])
+            # TODO: add Reranking & Rerank model
+            # The current query is pretty accurate, but
+            # there are a few times where out of the 10
+            # items, the first is not the most accurate
+            # Reranking can solve that issue
+
+            # Deduplicate, keep only the first tag of a file
+            unique_metadatas = []
+            unique_distances = []
+            seen_files = set()
+            for metadata, distance in zip(
+                top_n_results["metadatas"][0],
+                top_n_results["distances"][0]
+            ):
+                file_path = metadata["tag_file"]
+                if file_path not in seen_files:
+                    seen_files.add(file_path)
+                    unique_metadatas.append(metadata)
+                    unique_distances.append(distance)
+
+            distinct_top_n_results = {
+                "metadatas": [unique_metadatas],
+                "distances": [unique_distances]
+            }
+
+            # We need to do chunk-level scoring with file-level
+            # aggregation
+            #
+            # 1. Each tag is treated as a chunk
+            # 2. We compute the similarity between the query
+            # embedding and the embedding of each tag individually.
+            # 3. This gives a score per chunk.
+
+            for meta, dist in zip(
+                distinct_top_n_results["metadatas"][0],
+                distinct_top_n_results["distances"][0]
+            ):
+                # Get meta file_path, do query to get all tags OF file_path
+                # Create a list of scores by iterating each tag and appending
+                # the simularity from the tag to the prompt
+                #
+                # Choose the file with the best score - that's the match!
+                file_results = collection.get(
+                    where={"tag_file": meta["tag_file"]}
+                )
+
+                for file_result in file_results["metadatas"]:
+                    print(file_result["tag_file"])
+                    print(file_result["tag"])
+
+            if args.prompt:
+                break
         except KeyboardInterrupt:
             print("\nInterrupted. Exiting...")
             break
-
-    # TODO: Implement cumulative scoring per file
-    # Right now, retrieval picks the single closest tag embedding.
-    # In the future, consider summing/aggregating similarities of all tags
-    # for a file to better handle multiple matching tags.
-    #
-    # NOTE: this can all be done with current data implementation
-    #
-    # Example:
-    # if you say "rubber squeaking" and there is:
-    # 1. mouse, squeaking
-    # 2. toy, squeaking
-    # the more likely match SHOULD be the toy since it's
-    # inanimate like rubber, but with the current implementation,
-    # BOTH are matched with "squeaking", and the mouse
-    # might play

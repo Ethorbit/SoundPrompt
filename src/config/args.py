@@ -48,6 +48,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-p",
+    "--prompt",
+    type=str,
+    help="Prompt for what sound to play"
+)
+
+parser.add_argument(
     "--db-path",
     type=Path,
     help="Path to database directory"
