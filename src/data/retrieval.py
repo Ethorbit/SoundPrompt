@@ -43,7 +43,7 @@ def get_top_results(
 
 def deduplicate_results(result: QueryResult) -> QueryResult:
     """
-    Keep only the first tag of a item
+    Keep only the first tag of an item
     """
     unique_metadatas = []
     unique_distances = []
