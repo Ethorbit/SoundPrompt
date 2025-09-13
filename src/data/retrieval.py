@@ -43,20 +43,19 @@ def get_top_results(
 
 def deduplicate_results(result: QueryResult) -> QueryResult:
     """
-    Keep only the first tag of a file
+    Keep only the first tag of a item
     """
-
     unique_metadatas = []
     unique_distances = []
-    seen_files = set()
+    seen_items = set()
 
-    for metadata, distance in zip(
+    for result_id, metadata, distance in zip(
+        result["ids"][0],
         result["metadatas"][0],
         result["distances"][0]
     ):
-        file_path = metadata["tag_file"]
-        if file_path not in seen_files:
-            seen_files.add(file_path)
+        if result_id not in seen_items:
+            seen_items.add(result_id)
             unique_metadatas.append(metadata)
             unique_distances.append(distance)
 
