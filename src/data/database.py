@@ -127,7 +127,14 @@ class Data:
             mode="r",
             encoding="utf-8"
         ) as f:
-            tags = [tag.strip() for tag in f.read().lower().split(",")]
+            tags = [
+                tag.strip()
+                for tag in f.read().lower().split(",")
+            ]
+
+            file_name, _ = filesystem.split_extension(tags_file_name)
+            tags.append(file_name.lower())
+
             for tag in tags:
                 collection.add(
                     ids=self.create_key(

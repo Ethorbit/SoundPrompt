@@ -23,6 +23,10 @@ import os
 from typing import Generator
 
 
+def split_extension(path: str) -> tuple[str, str]:
+    return os.path.splitext(path)
+
+
 class RecursiveScanDir:
     """
     Recursively scan a directory very quickly,
@@ -68,7 +72,7 @@ class RecursiveScanDir:
                 yield from self._scan(entry.path)
             else:
                 if self.extensions is not None:
-                    stem, ext = os.path.splitext(entry.name)
+                    stem, ext = split_extension(entry.name)
 
                     if ext.lower() in self.extensions:
                         # (we pass the stem & ext so they
