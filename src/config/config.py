@@ -44,7 +44,10 @@ def load_config():
     with open(config_path, "rb") as f:
         cfg = tomllib.load(f)
 
+        if args.save_filenames is True:
+            cfg["database"]["save_filenames"] = True
+
         if args.db_path:
-            cfg["general"]["db_dir"] = args.db_path
+            cfg["database"]["directory"] = args.db_path
 
         return cfg

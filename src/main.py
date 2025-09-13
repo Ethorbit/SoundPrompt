@@ -30,8 +30,8 @@ args = args.get_args()
 
 if args.save or args.load:
     data = database.Data(
+        config=cfg,
         model=model,
-        data_directory=cfg["general"]["db_dir"],
         library_directory=(args.save or args.load)
     )
 
@@ -65,6 +65,7 @@ if args.load:
 
             selected_file = retrieval.get_highest_scored_file(scored_files)
 
+            print(top_results["ids"])
             print(scored_files)
             print(selected_file)
 

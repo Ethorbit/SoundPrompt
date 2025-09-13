@@ -20,7 +20,9 @@
 #
 
 [general]
-model_name = "all-MiniLM-L6-v2" # WARNING: CHANGING THIS WILL BREAK EXISTING SAVES!
+model_name = "all-MiniLM-L6-v2"
 # TODO: raranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-# then rename model_name
-db_dir = "output"
+
+[database]
+directory = "output"
+save_filenames = false  # WARNING: will pollute tags if you don't name all files properly

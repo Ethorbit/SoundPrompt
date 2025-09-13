@@ -41,6 +41,12 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--save-filenames",
+    action="store_true",
+    help="Save filenames as tags"
+)
+
+parser.add_argument(
     "-l",
     "--load",
     type=Path,

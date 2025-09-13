@@ -22,6 +22,7 @@
 import re
 import chromadb
 import os
+import json
 from . import filesystem
 from dataclasses import asdict, dataclass
 from sentence_transformers import SentenceTransformer
@@ -47,6 +48,9 @@ class TaggedFileMissingError(Exception):
         super().__init__(self.message)
 
 
+# TODO: add progress bar or loading animation
+# 100 files takes ~5 seconds to save
+# massive libraries could take minutes
 class Data:
     """
     Manages a sound library with tag-based metadata and AI embeddings.
@@ -67,6 +71,7 @@ class Data:
     (hundreds of thousands of files).
     """
 
+    config: dict[str]
     client: chromadb.PersistentClient
     model: SentenceTransformer
     directory: str
@@ -76,12 +81,14 @@ class Data:
 
     def __init__(
         self,
+        config: dict[str],
         model: SentenceTransformer,
-        data_directory: str,
         library_directory: str
     ):
+        self.config = config
         self.model = model
 
+        data_directory = config["database"]["directory"]
         for d in [data_directory, library_directory]:
             filesystem.validate_directory(d)
 
@@ -100,15 +107,44 @@ class Data:
         pattern = re.compile(r"(\s|\W)")
         self.collection_name = re.sub(pattern, "_", str(value))
 
-    def create_key(self, filename: str, tag: str) -> str:
+    def create_key(self, *parts: str) -> str:
         """
         Standardized format for collection key
         Should always be used when saving entries
         """
 
-        return filename + "_" + tag
+        return "::".join(str(p) for p in parts if p)
 
-    def collection_add(
+    def collection_add_config(
+        self,
+        collection: chromadb.Collection
+    ):
+        collection.add(
+            ids=self.create_key(
+                self.library_directory,
+                "settings",
+            ),
+            documents=[json.dumps(self.config)]
+        )
+
+    def collection_get_config(
+        self,
+        collection: chromadb.Collection
+    ) -> dict:
+        item = collection.get(
+            ids=[
+                self.create_key(
+                    self.library_directory,
+                    "settings"
+                )
+            ],
+            include=["documents"]
+        )
+
+        if item["ids"]:
+            return json.loads(item["documents"][0])
+
+    def collection_add_file(
         self,
         collection: chromadb.Collection,
         tags_file_name: str,
@@ -132,12 +168,14 @@ class Data:
                 for tag in f.read().lower().split(",")
             ]
 
-            file_name, _ = filesystem.split_extension(tags_file_name)
-            tags.append(file_name.lower())
+            if self.config["database"]["save_filenames"]:
+                file_name, _ = filesystem.split_extension(tags_file_name)
+                tags.append(file_name.lower())
 
             for tag in tags:
                 collection.add(
                     ids=self.create_key(
+                        self.library_directory,
                         tags_file_name,
                         tag
                     ),
@@ -158,7 +196,20 @@ class Data:
 
         collection = self.get_collection(True)
 
-        # add an auto tag which is the filename itself
+        force_update = False
+
+        # Force an update if crucial settings have changed
+        collection_config = self.collection_get_config(collection)
+        if collection_config:
+            if (
+                self.config["database"]["save_filenames"]
+                is not collection_config["database"]["save_filenames"]
+            ) or (
+                # Models change embeddings entirely
+                self.config["general"]["model_name"]
+                is not collection_config["general"]["model_name"]
+            ):
+                force_update = True
 
         file_entries = filesystem.RecursiveScanDir(
             self.library_directory,
@@ -187,14 +238,14 @@ class Data:
                 else:
                     raise e
             finally:
-                existing_item = collection.get(
+                existing_item = force_update or collection.get(
                     where={
                         "tag_file": tags_file_path,
                     }
                 )
 
-                if not existing_item["ids"]:
-                    self.collection_add(
+                if force_update or not existing_item["ids"]:
+                    self.collection_add_file(
                         collection=collection,
                         tags_file_name=file_stem,
                         tags_file_path=tags_file_path,
@@ -205,8 +256,11 @@ class Data:
 
                 print("Skipped. Check tags")
                 # at this point the file exists in collection,
-                # make sure its metadata tags match current tags
-                # if it does, skip it, otherwise redo its entry
+
+                # check if filenames_included matches arg
+                # if not, redo the tags
+
+        self.collection_add_config(collection)
 
         # Iterate all file paths
         # remove entries for files that aren't valid anymore
