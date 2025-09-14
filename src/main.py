@@ -65,7 +65,7 @@ if args.load:
 
             selected_file = retrieval.get_highest_scored_file(scored_files)
 
-            print(top_results["ids"])
+            print(top_results)
             print(scored_files)
             print(selected_file)
 

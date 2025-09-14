@@ -43,7 +43,11 @@ parser.add_argument(
 parser.add_argument(
     "--save-filenames",
     action="store_true",
-    help="Save filenames as tags"
+    help="""
+    Save filenames as tags. WARNING if you use this:
+    ALL your files must be named with real words
+    or you'll get unpredictable results
+    """
 )
 
 parser.add_argument(

@@ -115,15 +115,19 @@ class Data:
 
         return "::".join(str(p) for p in parts if p)
 
-    def collection_add_config(
+    def collection_update_config(
         self,
         collection: chromadb.Collection
     ):
-        collection.add(
-            ids=self.create_key(
+        """
+        Saves the config's settings to the database collection
+        """
+
+        collection.update(
+            ids=[self.create_key(
                 self.library_directory,
                 "settings",
-            ),
+            )],
             documents=[json.dumps(self.config)]
         )
 
@@ -132,19 +136,17 @@ class Data:
         collection: chromadb.Collection
     ) -> dict:
         item = collection.get(
-            ids=[
-                self.create_key(
-                    self.library_directory,
-                    "settings"
-                )
-            ],
+            ids=[self.create_key(
+                self.library_directory,
+                "settings"
+            )],
             include=["documents"]
         )
 
         if item["ids"]:
             return json.loads(item["documents"][0])
 
-    def collection_add_file(
+    def collection_update_file(
         self,
         collection: chromadb.Collection,
         tags_file_name: str,
@@ -152,7 +154,7 @@ class Data:
         audio_file_path: str
     ):
         """
-        Adds a file to a database collection
+        Saves a file to a database collection
         - Adds the tag file path
         - Adds the audio file path
         - AI Encodes each of its tags
@@ -173,12 +175,12 @@ class Data:
                 tags.append(file_name.lower())
 
             for tag in tags:
-                collection.add(
-                    ids=self.create_key(
+                collection.update(
+                    ids=[self.create_key(
                         self.library_directory,
                         tags_file_name,
                         tag
-                    ),
+                    )],
                     embeddings=[self.model.encode(tag)],
                     metadatas={
                         "tag_file": tags_file_path,
@@ -196,20 +198,20 @@ class Data:
 
         collection = self.get_collection(True)
 
-        force_update = False
+        force_file_update = False
 
         # Force an update if crucial settings have changed
         collection_config = self.collection_get_config(collection)
         if collection_config:
             if (
                 self.config["database"]["save_filenames"]
-                is not collection_config["database"]["save_filenames"]
+                != collection_config["database"]["save_filenames"]
             ) or (
                 # Models change embeddings entirely
                 self.config["general"]["model_name"]
-                is not collection_config["general"]["model_name"]
+                != collection_config["general"]["model_name"]
             ):
-                force_update = True
+                force_file_update = True
 
         file_entries = filesystem.RecursiveScanDir(
             self.library_directory,
@@ -238,14 +240,14 @@ class Data:
                 else:
                     raise e
             finally:
-                existing_item = force_update or collection.get(
+                existing_item = force_file_update or collection.get(
                     where={
                         "tag_file": tags_file_path,
                     }
                 )
 
-                if force_update or not existing_item["ids"]:
-                    self.collection_add_file(
+                if force_file_update or not existing_item["ids"]:
+                    self.collection_update_file(
                         collection=collection,
                         tags_file_name=file_stem,
                         tags_file_path=tags_file_path,
@@ -260,7 +262,7 @@ class Data:
                 # check if filenames_included matches arg
                 # if not, redo the tags
 
-        self.collection_add_config(collection)
+        self.collection_update_config(collection)
 
         # Iterate all file paths
         # remove entries for files that aren't valid anymore

@@ -25,4 +25,4 @@ model_name = "all-MiniLM-L6-v2"
 
 [database]
 directory = "output"
-save_filenames = false  # WARNING: will pollute tags if you don't name all files properly
+save_filenames = false  # WARNING if you use this: ALL your files must be named with real words or you'll get unpredictable results
