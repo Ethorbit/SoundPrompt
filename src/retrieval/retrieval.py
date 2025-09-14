@@ -25,8 +25,6 @@ from chromadb import Collection, QueryResult
 from sentence_transformers import util
 from collections import defaultdict
 
-# TODO: Turn parameters into custom classes for better clarity
-
 
 def get_top_results(
     collection: Collection,

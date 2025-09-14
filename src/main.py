@@ -18,8 +18,11 @@
 # GNU General Public License along with SoundPrompt.
 # If not, see <https://www.gnu.org/licenses/>.
 #
+
+import readline
+from retrieval.prompter import Prompter
 from config import args, config as config_import
-from data import database, retrieval
+from data import database
 from sentence_transformers import SentenceTransformer
 cfg = config_import.load_config()
 
@@ -40,38 +43,21 @@ if args.save:
 
 if args.load:
     collection = data.get_collection()
+    prompter = Prompter(model=model, collection=collection)
 
-    while True:
-        try:
-            # TODO: make interactive prompt have a history like a terminal
-            prompt = args.prompt or input(">>>").lower()
-            prompt_embedding = model.encode(prompt.lower())
+    if args.prompt:
+        file = prompter.prompt(args.prompt)
+        print(file)
+    else:  # Interactive
+        while True:
+            try:
+                cmd = input(">>>").strip().lower()
+                if not cmd:
+                    continue
 
-            top_results = retrieval.get_top_results(
-                collection,
-                embedding=prompt_embedding,
-                limit=10
-            )
-
-            deduplicated_top_results = retrieval.deduplicate_results(
-                top_results
-            )
-
-            scored_files = retrieval.get_cumulative_file_scores(
-                collection,
-                embedding=prompt_embedding,
-                result=deduplicated_top_results
-            )
-
-            selected_file = retrieval.get_highest_scored_file(scored_files)
-
-            print(top_results)
-            print(scored_files)
-            print(selected_file)
-
-            # If it's not interactive, stop immediately
-            if args.prompt:
+                readline.add_history(cmd)
+                file = prompter.prompt(cmd)
+                print(file)
+            except (KeyboardInterrupt, EOFError):
+                print("\nInterrupted. Exiting...")
                 break
-        except KeyboardInterrupt:
-            print("\nInterrupted. Exiting...")
-            break
