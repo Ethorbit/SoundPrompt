@@ -23,7 +23,7 @@ import re
 import chromadb
 import os
 import json
-from . import filesystem
+from soundprompt.data import filesystem
 from dataclasses import asdict, dataclass
 from sentence_transformers import SentenceTransformer
 

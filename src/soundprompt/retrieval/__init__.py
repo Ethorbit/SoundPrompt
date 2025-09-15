@@ -19,35 +19,3 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-from . import args
-import tomllib
-from pathlib import Path
-
-script_dir = Path(__file__).parent
-config_path = script_dir.parent / "../config.toml"
-
-args = args.get_args()
-
-
-def load_config():
-    """
-    Loads the config file, which contains app-specific global settings
-
-    Note: overrides values with CLI args
-    """
-
-    if not config_path.exists():
-        raise FileNotFoundError(
-            f"config.toml missing, needed at {config_path}"
-        )
-
-    with open(config_path, "rb") as f:
-        cfg = tomllib.load(f)
-
-        if args.save_filenames is True:
-            cfg["database"]["save_filenames"] = True
-
-        if args.db_path:
-            cfg["database"]["directory"] = args.db_path
-
-        return cfg

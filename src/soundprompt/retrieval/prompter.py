@@ -20,7 +20,7 @@
 #
 
 import chromadb
-from . import retrieval
+from soundprompt.retrieval import retrieval
 from sentence_transformers import SentenceTransformer
 
 

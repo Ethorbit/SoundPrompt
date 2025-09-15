@@ -17,14 +17,19 @@
 # You should have received a copy of the
 # GNU General Public License along with SoundPrompt.
 # If not, see <https://www.gnu.org/licenses/>.
-#
+# If not, see <https://www.gnu.org/licenses/>.
 
-import readline
-from retrieval.prompter import Prompter
-from config import args, config as config_import
-from data import database
+# TODO: add VTT and multithreading to handle both VTT
+# and console commands
+
+from soundprompt.console import Console
+from soundprompt.retrieval.prompter import Prompter
+from soundprompt.config import args
+from soundprompt.config.config import load_config
+from soundprompt.data import database
+from threading import Thread
 from sentence_transformers import SentenceTransformer
-cfg = config_import.load_config()
+cfg = load_config()
 
 model_name = cfg["general"]["model_name"]
 model = SentenceTransformer(model_name)
@@ -48,16 +53,7 @@ if args.load:
     if args.prompt:
         file = prompter.prompt(args.prompt)
         print(file)
-    else:  # Interactive
-        while True:
-            try:
-                cmd = input(">>>").strip().lower()
-                if not cmd:
-                    continue
-
-                readline.add_history(cmd)
-                file = prompter.prompt(cmd)
-                print(file)
-            except (KeyboardInterrupt, EOFError):
-                print("\nInterrupted. Exiting...")
-                break
+    else:
+        console = Console()
+        # TODO: console.subscribe
+        console.interactive()
