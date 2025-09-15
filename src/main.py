@@ -55,5 +55,7 @@ if args.load:
         print(file)
     else:
         console = Console()
-        # TODO: console.subscribe
+        console.on_command.subscribe(
+            lambda cmd: print(f"Yes. {cmd}")
+        )
         console.interactive()

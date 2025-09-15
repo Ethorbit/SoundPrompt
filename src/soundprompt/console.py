@@ -20,14 +20,9 @@
 #
 
 from threading import Thread
-from dataclasses import dataclass
+from soundprompt.event import Event
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
-
-
-@dataclass
-class ConsoleSubscription:
-    callback: callable
 
 
 class Console:
@@ -37,17 +32,15 @@ class Console:
 
     # TODO: add Queue, methods to send commands
 
+    on_command: Event
     history: InMemoryHistory
-    prompt_session: PromptSession
-    subscriptions: list[ConsoleSubscription]
+    _prompt_session: PromptSession
 
     def __init__(self):
         history = InMemoryHistory()
         self.history = history
-        self.prompt_session = PromptSession(history=history)
-
-    def subscribe(self, cb: callable) -> None:
-        self.subscriptions.add(ConsoleSubscription(callback=cb))
+        self._prompt_session = PromptSession(history=history)
+        self.on_command = Event()
 
     # Create Queue Loop, cb on each command
     # def send(cmd: str)
@@ -55,13 +48,13 @@ class Console:
     def interactive(self) -> Thread:
         while True:
             try:
-                cmd = self.prompt_session.prompt(">>>").strip().lower()
+                cmd = self._prompt_session.prompt(">>>").strip().lower()
                 if not cmd:
                     continue
 
                 self.history.append_string(cmd)
                 # TODO: self.send(cmd)
-                print(f"WORKED: {cmd}")
+                self.on_command.notify(cmd)
             except (KeyboardInterrupt, EOFError):
                 print("\nInterrupted. Exiting...")
                 break
