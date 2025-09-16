@@ -20,54 +20,46 @@
 #
 
 from queue import Queue
-from threading import Thread
+from soundprompt.worker import Worker
 from soundprompt.event import Event
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 
 
-class CommandLoop:
+class CommandLoop(Worker):
     """
     Handles processing of commands
     """
 
     _queue: Queue[str]
-    _is_stopped: bool = False
     event: Event
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._queue = Queue()
         self.event = Event()
 
-    def _start(self) -> None:
-        while not self._is_stopped:
+    def run(self) -> None:
+        while not self.is_stopped():
             if not self._queue.empty():
                 cmd = self._queue.get()
                 self.event.notify(cmd)
-
-    def start(self) -> Thread:
-        t = Thread(target=self._start)
-        t.start()
-        return t
-
-    def stop(self) -> None:
-        self._is_stopped = True
-        self._queue.empty()
 
     def submit(self, cmd: str) -> None:
         self._queue.put(cmd)
 
 
-class Console:
+class Console(Worker):
     """
-    Class for console interface
+    Class for CLI console
     """
 
     commandLoop: CommandLoop
     history: InMemoryHistory
     _prompt_session: PromptSession
 
-    def __init__(self, commandLoop: CommandLoop):
+    def __init__(self, commandLoop: CommandLoop, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.commandLoop = commandLoop
         history = InMemoryHistory()
         self.history = history
@@ -77,8 +69,8 @@ class Console:
     def send_command(self, command: str) -> None:
         self.commandLoop.submit(command)
 
-    def _interactive(self) -> None:
-        while True:
+    def run(self) -> None:
+        while not self.is_stopped():
             try:
                 cmd = self._prompt_session.prompt(">>>").strip().lower()
                 if not cmd:
@@ -89,8 +81,3 @@ class Console:
             except (KeyboardInterrupt, EOFError):
                 print("\nInterrupted. Exiting...")
                 break
-
-    def interactive(self) -> Thread:
-        t = Thread(target=self._interactive)
-        t.start()
-        return t
