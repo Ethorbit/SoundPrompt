@@ -22,12 +22,11 @@
 # TODO: add VTT and multithreading to handle both VTT
 # and console commands
 
-from soundprompt.console import Console
+from soundprompt.console import Console, CommandLoop
 from soundprompt.retrieval.prompter import Prompter
 from soundprompt.config import args
 from soundprompt.config.config import load_config
 from soundprompt.data import database
-from threading import Thread
 from sentence_transformers import SentenceTransformer
 cfg = load_config()
 
@@ -54,8 +53,13 @@ if args.load:
         file = prompter.prompt(args.prompt)
         print(file)
     else:
-        console = Console()
-        console.on_command.subscribe(
-            lambda cmd: print(f"Yes. {cmd}")
-        )
-        console.interactive()
+        def on_command(cmd: str):
+            print(f"Yes. {cmd}")
+
+        commandLoop = CommandLoop()
+        commandLoop.event.subscribe(on_command)
+        console = Console(commandLoop)
+        t1 = commandLoop.start()
+        t2 = console.interactive()
+        t2.join()
+        commandLoop.stop()
