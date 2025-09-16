@@ -45,7 +45,7 @@ class Console:
     # Create Queue Loop, cb on each command
     # def send(cmd: str)
 
-    def interactive(self) -> Thread:
+    def _interactive(self) -> None:
         while True:
             try:
                 cmd = self._prompt_session.prompt(">>>").strip().lower()
@@ -58,3 +58,8 @@ class Console:
             except (KeyboardInterrupt, EOFError):
                 print("\nInterrupted. Exiting...")
                 break
+
+    def interactive(self) -> Thread:
+        t = Thread(target=self._interactive())
+        t.start()
+        return t
