@@ -226,19 +226,16 @@ class Data:
 
             try:
                 filesystem.validate_file(audio_file_path)
-            except Exception as e:
-                if isinstance(e, FileExistsError):
-                    raise TaggedFileMissingError(
-                        f"Your tag {tags_file_path} was made "
-                        f"for an audio file that doesn't exist: "
-                        f"{audio_file_path}\n"
-                        f"Make sure the tag's filename is "
-                        f"EXACTLY the same as the sound's "
-                        f"with .txt appended at the end. "
-                        f"e.g.: awesome-explosion.mp3.txt"
-                    )
-                else:
-                    raise e
+            except FileExistsError:
+                raise TaggedFileMissingError(
+                    f"Your tag {tags_file_path} was made "
+                    f"for an audio file that doesn't exist: "
+                    f"{audio_file_path}\n"
+                    f"Make sure the tag's filename is "
+                    f"EXACTLY the same as the sound's "
+                    f"with .txt appended at the end. "
+                    f"e.g.: awesome-explosion.mp3.txt"
+                )
             finally:
                 existing_item = force_file_update or collection.get(
                     where={
