@@ -20,6 +20,7 @@
 #
 
 from soundprompt.config import args
+from typing import Any
 import tomllib
 from pathlib import Path
 
@@ -29,7 +30,7 @@ config_path = script_dir.parent / "../../config.toml"
 args = args.get_args()
 
 
-def load_config():
+def load_config() -> dict[str, Any]:
     """
     Loads the config file, which contains app-specific global settings
 

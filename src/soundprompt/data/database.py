@@ -23,6 +23,7 @@ import re
 import chromadb
 import os
 import json
+from typing import Any
 from soundprompt.data import filesystem
 from dataclasses import asdict, dataclass
 from sentence_transformers import SentenceTransformer
@@ -71,12 +72,11 @@ class Data:
     (hundreds of thousands of files).
     """
 
-    config: dict[str]
+    config: dict[str, Any]
     client: chromadb.PersistentClient
     model: SentenceTransformer
     directory: str
     library_directory: str
-    key: str
     collection_name: str
 
     def __init__(
@@ -99,7 +99,7 @@ class Data:
             path=data_directory
         )
 
-    def set_collection_name(self, value: str):
+    def set_collection_name(self, value: str) -> None:
         """
         Sanitizes a string to be a valid ChromaDB Collection name
         - Replaces symbols and whitespaces with an underscore
@@ -118,7 +118,7 @@ class Data:
     def collection_update_config(
         self,
         collection: chromadb.Collection
-    ):
+    ) -> None:
         """
         Saves the config's settings to the database collection
         """
@@ -134,7 +134,7 @@ class Data:
     def collection_get_config(
         self,
         collection: chromadb.Collection
-    ) -> dict:
+    ) -> Any:
         item = collection.get(
             ids=[self.create_key(
                 self.library_directory,
@@ -152,7 +152,7 @@ class Data:
         tags_file_name: str,
         tags_file_path: str,
         audio_file_path: str
-    ):
+    ) -> None:
         """
         Saves a file to a database collection
         - Adds the tag file path
@@ -189,7 +189,7 @@ class Data:
                     }
                 )
 
-    def update(self):
+    def update(self) -> None:
         """
         Updates the library in the database
         - Iterates all the files
