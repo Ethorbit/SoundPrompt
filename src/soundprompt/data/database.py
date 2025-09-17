@@ -25,18 +25,20 @@ import os
 import json
 from typing import Any
 from soundprompt.data import filesystem
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from sentence_transformers import SentenceTransformer
 
 
 @dataclass
-class Metadata:
-    file: str
-    file_hash: str
-    tag: str
+class TagData:
+    """
+    Data class containing common tag file info
+    """
 
-    def to_dict(self):
-        return asdict(self)
+    file_path: str
+    file_name: str
+    directory: str | None = None
+    tags: list[str] | None = None
 
 
 class TaggedFileMissingError(Exception):
@@ -146,22 +148,13 @@ class Data:
         if item["ids"]:
             return json.loads(item["documents"][0])
 
-    def collection_update_file(
+    def collection_get_file_tags(
         self,
         collection: chromadb.Collection,
-        tags_file_name: str,
-        tags_file_path: str,
-        audio_file_path: str
-    ) -> None:
-        """
-        Saves a file to a database collection
-        - Adds the tag file path
-        - Adds the audio file path
-        - AI Encodes each of its tags
-        """
-
+        tag_data: TagData
+    ) -> list[str]:
         with open(
-            tags_file_path,
+            tag_data.file_path,
             mode="r",
             encoding="utf-8"
         ) as f:
@@ -171,23 +164,47 @@ class Data:
             ]
 
             if self.config["database"]["save_filenames"]:
-                file_name, _ = filesystem.split_extension(tags_file_name)
+                file_name, _ = filesystem.split_extension(tag_data.file_name)
                 tags.append(file_name.lower())
 
-            for tag in tags:
-                collection.update(
-                    ids=[self.create_key(
+            return tags
+
+    def collection_update_file(
+        self,
+        collection: chromadb.Collection,
+        tag_data: TagData,
+        audio_file_path: str
+    ) -> None:
+        """
+        Saves a file to a database collection
+        - Adds the tag file path
+        - Adds the audio file path
+        - AI Encodes each of its tags
+        """
+
+        if tag_data.tags is None:
+            tag_data.tags = self.collection_get_file_tags(
+                collection,
+                tags_file_path=tag_data.file_path,
+                tags_file_name=tag_data.file_name
+            )
+
+        for tag in tag_data.tags:
+            collection.update(
+                ids=[
+                    self.create_key(
                         self.library_directory,
-                        tags_file_name,
+                        tag_data.file_name,
                         tag
-                    )],
-                    embeddings=[self.model.encode(tag)],
-                    metadatas={
-                        "tag_file": tags_file_path,
-                        "audio_file": audio_file_path,
-                        "tag": tag
-                    }
-                )
+                    )
+                ],
+                embeddings=[self.model.encode(tag)],
+                metadatas=[{
+                    "tag_file": tag_data.file_path,
+                    "audio_file": audio_file_path,
+                    "tag": tag
+                }]
+            )
 
     def update(self) -> None:
         """
@@ -221,8 +238,13 @@ class Data:
 
         for file_entry, file_stem, file_ext in file_entries:
             tags_file_path = file_entry.path
-            tags_dir = os.path.dirname(tags_file_path)
-            audio_file_path = os.path.join(tags_dir, file_stem)
+            tag_data = TagData(
+                file_name=file_stem,
+                file_path=tags_file_path,
+                directory=os.path.dirname(tags_file_path)
+            )
+
+            audio_file_path = os.path.join(tag_data.directory, file_stem)
 
             try:
                 filesystem.validate_file(audio_file_path)
@@ -237,26 +259,31 @@ class Data:
                     f"e.g.: awesome-explosion.mp3.txt"
                 )
             finally:
+                tag_data.tags = self.collection_get_file_tags(
+                    collection,
+                    tag_data=tag_data
+                )
+
                 existing_item = force_file_update or collection.get(
                     where={
-                        "tag_file": tags_file_path,
+                        "tag_file": tag_data.file_path,
                     }
                 )
 
                 if force_file_update or not existing_item["ids"]:
                     self.collection_update_file(
                         collection=collection,
-                        tags_file_name=file_stem,
-                        tags_file_path=tags_file_path,
+                        tag_data=tag_data,
                         audio_file_path=audio_file_path
                     )
 
                     continue
 
                 print("Skipped. Check tags")
-                # at this point the file exists in collection,
-
-                # check if filenames_included matches arg
+                # Check if db_entry's tags match tag_data.tags
+                # for db_entry in existing_item["metadatas"]:
+                #   tag = db_entry["tag"]
+                #
                 # if not, redo the tags
 
         self.collection_update_config(collection)
