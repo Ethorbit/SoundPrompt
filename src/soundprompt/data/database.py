@@ -23,32 +23,14 @@ import re
 import chromadb
 import os
 import json
+from soundprompt.data.tag import (
+    TaggedFileMissingError,
+    TagData,
+    Tags
+)
 from typing import Any
 from soundprompt.data import filesystem
-from dataclasses import dataclass
 from sentence_transformers import SentenceTransformer
-
-
-@dataclass
-class TagData:
-    """
-    Data class containing common tag file info
-    """
-
-    file_path: str
-    file_name: str
-    directory: str | None = None
-    tags: list[str] | None = None
-
-
-class TaggedFileMissingError(Exception):
-    """
-    Exception raised for when a file associated with a tag is missing.
-    """
-
-    def __init__(self, message: str):
-        self.message = message
-        super().__init__(self.message)
 
 
 # TODO: add progress bar or loading animation
@@ -152,20 +134,20 @@ class Data:
         self,
         collection: chromadb.Collection,
         tag_data: TagData
-    ) -> list[str]:
+    ) -> Tags:
         with open(
             tag_data.file_path,
             mode="r",
             encoding="utf-8"
         ) as f:
-            tags = [
+            tags = Tags([
                 tag.strip()
                 for tag in f.read().lower().split(",")
-            ]
+            ])
 
             if self.config["database"]["save_filenames"]:
                 file_name, _ = filesystem.split_extension(tag_data.file_name)
-                tags.append(file_name.lower())
+                tags.add(file_name.lower())
 
             return tags
 
@@ -190,7 +172,7 @@ class Data:
             )
 
         for tag in tag_data.tags:
-            collection.update(
+            collection.upsert(
                 ids=[
                     self.create_key(
                         self.library_directory,
@@ -205,6 +187,15 @@ class Data:
                     "tag": tag
                 }]
             )
+
+    def collection_remove_file(
+        self,
+        collection: chromadb.Collection,
+        audio_file_path
+    ) -> None:
+        collection.delete(
+            where={"audio_file": audio_file_path}
+        )
 
     def update(self) -> None:
         """
@@ -270,21 +261,32 @@ class Data:
                     }
                 )
 
+                if force_file_update:
+                    self.collection_remove_file(
+                        collection,
+                        audio_file_path=audio_file_path
+                    )
+
                 if force_file_update or not existing_item["ids"]:
                     self.collection_update_file(
                         collection=collection,
                         tag_data=tag_data,
                         audio_file_path=audio_file_path
                     )
+                else:
+                    db_tags = Tags([
+                        db_entry["tag"]
+                        for db_entry in existing_item["metadatas"]
+                    ])
 
-                    continue
+                    if db_tags != tag_data.tags:
+                        self.collection_update_file(
+                            collection=collection,
+                            tag_data=tag_data,
+                            audio_file_path=audio_file_path
+                        )
 
-                print("Skipped. Check tags")
-                # Check if db_entry's tags match tag_data.tags
-                # for db_entry in existing_item["metadatas"]:
-                #   tag = db_entry["tag"]
-                #
-                # if not, redo the tags
+                        print(f"Updated {tags_file_path}")
 
         self.collection_update_config(collection)
 
