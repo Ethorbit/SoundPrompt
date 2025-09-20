@@ -300,24 +300,29 @@ class Data:
         )
 
         for result in results["metadatas"]:
-            if result:
-                result_audio_file = result["audio_file"]
-                if result_audio_file not in checked_files:
-                    checked_files.add(result_audio_file)
+            if not result:
+                continue
 
-                    try:
-                        filesystem.validate_file(result_audio_file)
-                    except FileExistsError:
-                        print(
-                            (
-                                "Removing entry for missing audio file:"
-                                f" {result_audio_file}"
-                            )
-                        )
-                        self.collection_remove_file(
-                            collection,
-                            result_audio_file
-                        )
+            result_audio_file = result["audio_file"]
+
+            if result_audio_file in checked_files:
+                continue
+
+            checked_files.add(result_audio_file)
+
+            try:
+                filesystem.validate_file(result_audio_file)
+            except FileExistsError:
+                print(
+                    (
+                        "Removing entry for missing audio file:"
+                        f" {result_audio_file}"
+                    )
+                )
+                self.collection_remove_file(
+                    collection,
+                    result_audio_file
+                )
 
     def get_collection(self, create: bool = False) -> chromadb.Collection:
         return (
