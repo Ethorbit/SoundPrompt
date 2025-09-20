@@ -164,6 +164,14 @@ class Data:
         - AI Encodes each of its tags
         """
 
+        # First remove the file's entry
+        # (we have to calculate all tags anyway)
+        # + this fixes tags not being removed
+        self.collection_remove_file(
+            collection,
+            audio_file_path=audio_file_path
+        )
+
         if tag_data.tags is None:
             tag_data.tags = self.collection_get_file_tags(
                 collection,
@@ -261,12 +269,6 @@ class Data:
                     }
                 )
 
-                if force_file_update:
-                    self.collection_remove_file(
-                        collection,
-                        audio_file_path=audio_file_path
-                    )
-
                 if force_file_update or not existing_item["ids"]:
                     self.collection_update_file(
                         collection=collection,
@@ -274,6 +276,7 @@ class Data:
                         audio_file_path=audio_file_path
                     )
                 else:
+                    # Update on tag mismatch
                     db_tags = Tags([
                         db_entry["tag"]
                         for db_entry in existing_item["metadatas"]
@@ -290,9 +293,32 @@ class Data:
 
         self.collection_update_config(collection)
 
-        # Iterate all file paths
-        # remove entries for files that aren't valid anymore
-        # (otherwise it will try to play invalid sounds)
+        # Remove database files if invalid on system
+        checked_files = set()
+        results = collection.get(
+            include=["metadatas"]
+        )
+
+        for result in results["metadatas"]:
+            if result:
+                result_audio_file = result["audio_file"]
+                if result_audio_file not in checked_files:
+                    checked_files.add(result_audio_file)
+
+                    try:
+                        filesystem.validate_file(result_audio_file)
+                    except FileExistsError:
+                        print(
+                            (
+                                "Removing entry for missing audio file:"
+                                f" {result_audio_file}"
+                            )
+                        )
+                        self.collection_remove_file(
+                            collection,
+                            result_audio_file
+                        )
+
     def get_collection(self, create: bool = False) -> chromadb.Collection:
         return (
             create and
