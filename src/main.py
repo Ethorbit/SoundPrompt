@@ -54,7 +54,8 @@ if args.load:
         print(file)
     else:
         def on_command(cmd: str):
-            print(f"Yes. {cmd}")
+            file = prompter.prompt(cmd)
+            print(file)
 
         commandLoop = CommandLoop()
         commandLoop.event.subscribe(on_command)

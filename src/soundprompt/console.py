@@ -24,7 +24,7 @@ from soundprompt.worker import Worker
 from soundprompt.event import Event
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
-
+from prompt_toolkit.patch_stdout import patch_stdout
 
 class CommandLoop(Worker):
     """
@@ -70,14 +70,15 @@ class Console(Worker):
         self.commandLoop.submit(command)
 
     def run(self) -> None:
-        while not self.is_stopped():
-            try:
-                cmd = self._prompt_session.prompt(">>>").strip().lower()
-                if not cmd:
-                    continue
+        with patch_stdout():
+            while not self.is_stopped():
+                try:
+                    cmd = self._prompt_session.prompt(">>>").strip().lower()
+                    if not cmd:
+                        continue
 
-                self.history.append_string(cmd)
-                self.send_command(cmd)
-            except (KeyboardInterrupt, EOFError):
-                print("\nInterrupted. Exiting...")
-                break
+                    self.history.append_string(cmd)
+                    self.send_command(cmd)
+                except (KeyboardInterrupt, EOFError):
+                    print("\nInterrupted. Exiting...")
+                    break
