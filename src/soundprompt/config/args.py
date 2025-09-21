@@ -24,9 +24,11 @@ Arguments passed via CLI
 Controls behavior and app-specific global settings
 """
 
-
 from pathlib import Path
-from argparse import ArgumentParser, Namespace
+from argparse import (
+    ArgumentParser,
+    Namespace
+)
 
 parser = ArgumentParser(
     prog="SoundPrompt",
@@ -72,8 +74,11 @@ parser.add_argument(
 
 parsed_args = parser.parse_args()
 
-if (parsed_args.load and parsed_args.save):
-    raise ValueError("You cannot load and save at the same time!")
+if parsed_args.load and parsed_args.save:
+    parser.error("You cannot load and save at the same time!")
+
+if not parsed_args.load and not parsed_args.save:
+    parser.error("You must specify either --load or --save!")
 
 
 def get_args() -> Namespace:
