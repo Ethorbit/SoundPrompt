@@ -31,7 +31,7 @@ SoundPrompt is a tool that plays your prerecorded audio files with AI prompts. I
 
 Using mechanical or software controls to trigger sounds is an unintuitive process that requires practice and scales horribly. SoundPrompt solves these problems by utilizing the power of Artificial Intelligence and modern hardware to play the sounds you want, faster than you ever could.
 
-### Usage
+## Usage
 
 * For each audio file
   * Create a file with the EXACT SAME name, ending with .txt (e.g. epic-explosion.wav.txt)
@@ -43,7 +43,7 @@ Using mechanical or software controls to trigger sounds is an unintuitive proces
 
 * After loading, type something that resembles the sound you want to hear (e.g. explode)
 
-#### 🎤 Routing to Your Apps
+### 🎤 Routing to Your Apps
 SoundPrompt does not create a virtual microphone. It simply plays sounds through the device's primary output device.
 To use it in apps like Discord, Zoom, OBS, etc, you’ll need a **virtual audio cable/loopback** to route the sound as if it were a mic.
 
