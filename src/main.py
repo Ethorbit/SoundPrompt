@@ -49,15 +49,18 @@ if args.load:
     collection = data.get_collection()
     prompter = Prompter(model=model, collection=collection)
 
-    if args.prompt:
-        file = prompter.prompt(args.prompt)
+    def enter_prompt(prompt: str):
+        file = prompter.prompt(prompt)
         print(file)
-    else:
-        def on_command(cmd: str):
-            file = prompter.prompt(cmd)
-            print(file)
 
+    if args.prompt:
+        enter_prompt(args.prompt)
+    else:
         commandLoop = CommandLoop()
+
+        def on_command(cmd: str):
+            enter_prompt(cmd)
+
         commandLoop.event.subscribe(on_command)
         console = Console(commandLoop)
         commandLoop.start()
