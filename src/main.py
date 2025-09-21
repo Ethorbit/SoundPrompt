@@ -19,8 +19,7 @@
 # If not, see <https://www.gnu.org/licenses/>.
 # If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: add VTT and multithreading to handle both VTT
-# and console commands
+# TODO: add VTT
 
 from soundprompt.console import Console, CommandLoop
 from soundprompt.retrieval.prompter import Prompter
