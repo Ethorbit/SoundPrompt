@@ -80,7 +80,10 @@ class Data:
         self.library_directory = library_directory
         self.set_collection_name(library_directory)
         self.client = chromadb.PersistentClient(
-            path=data_directory
+            path=data_directory,
+            settings=chromadb.Settings(
+                anonymized_telemetry=False
+            )
         )
 
     def set_collection_name(self, value: str) -> None:
