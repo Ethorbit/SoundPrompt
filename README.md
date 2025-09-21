@@ -42,3 +42,34 @@ Using mechanical or software controls to trigger sounds is an unintuitive proces
 * Load the library: `python ./src/main.py --load <directory>`
 
 * After loading, type something that resembles the sound you want to hear (e.g. explode)
+
+#### 🎤 Routing to Your Apps
+SoundPrompt does not create a virtual microphone. It simply plays sounds through the device's primary output device.
+To use it in apps like Discord, Zoom, OBS, etc, you’ll need a **virtual audio cable/loopback** to route the sound as if it were a mic.
+
+<details>
+<summary>Windows</summary>
+
+- Install [VB-Cable Free](https://vb-audio.com/Cable/) (single virtual cable).  
+- Set SoundPrompt’s output to *VB-Cable Input*.  
+- In Discord (or any other app), select *VB-Cable Output* as your microphone.
+
+</details>
+
+<details>
+<summary>macOS</summary>
+
+- Use [BlackHole](https://github.com/ExistentialAudio/BlackHole) (free, open-source).  
+- Route SoundPrompt through the virtual device.  
+- Choose that virtual device as the input in your app.  
+
+</details>
+
+<details>
+<summary>Linux</summary>
+
+- Use **PulseAudio** (usually preinstalled) or **JACK** (optional advanced routing).  
+- With `pavucontrol`, create a loopback from SoundPrompt’s output to a virtual input.  
+- Select the virtual input as your microphone in the target app.  
+
+</details>
