@@ -44,8 +44,8 @@ Using mechanical or software controls to trigger sounds is an unintuitive proces
 * After loading, type something that resembles the sound you want to hear (e.g. explode)
 
 ### 🎤 Routing to Your Apps
-SoundPrompt does not create a virtual microphone. It simply plays sounds through the device's primary output device.
-To use it in apps like Discord, Zoom, OBS, etc, you’ll need a **virtual audio cable/loopback** to route the sound as if it were a mic.
+SoundPrompt does not create a virtual microphone; it simply plays sounds through the device's primary output device.
+To use it in apps like Discord, Zoom, OBS, etc., you’ll need a **virtual audio input device/loopback stream** to route the sound as if it were coming from a microphone.
 
 <details>
 <summary>Windows</summary>
