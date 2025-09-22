@@ -21,25 +21,34 @@
 
 # TODO: add VTT
 
+import logging                           # noqa: E402
+logging.basicConfig(level=logging.INFO)  # noqa: E402
+logger = logging.getLogger(__name__)     # noqa: E402
+logger.info("Loading model...")  # noqa: E402 sentence_transformers: ~7s delay
+
 from soundprompt.console import Console, CommandLoop
 from soundprompt.retrieval.prompter import Prompter
 from soundprompt.config import args
 from soundprompt.config.config import load_config
 from soundprompt.data import database
 from sentence_transformers import SentenceTransformer
+
 cfg = load_config()
 
 model_name = cfg["general"]["model_name"]
 model = SentenceTransformer(model_name)
+logger.info("Model ready!")
 
 args = args.get_args()
 
 if args.save or args.load:
+    logger.info("Loading database...")
     data = database.Data(
         config=cfg,
         model=model,
         library_directory=(args.save or args.load)
     )
+    logger.info("Database ready!")
 
 if args.save:
     data.update()
