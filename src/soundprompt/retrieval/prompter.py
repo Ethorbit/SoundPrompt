@@ -41,7 +41,10 @@ class Prompter:
         self.collection = collection
 
     def prompt(self, prompt: str) -> str:
-        prompt_embedding = self.model.encode(prompt.lower())
+        prompt_embedding = self.model.encode(
+            prompt.lower(),
+            show_progress_bar=False
+        )
 
         top_results = retrieval.get_top_results(
             self.collection,
