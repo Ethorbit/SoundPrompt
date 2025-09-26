@@ -51,4 +51,7 @@ def load_config() -> dict[str, Any]:
         if args.db_path:
             cfg["database"]["directory"] = args.db_path
 
+        if args.device:
+            cfg["general"]["device"] = args.device
+
         return cfg

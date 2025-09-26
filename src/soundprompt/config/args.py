@@ -72,6 +72,12 @@ parser.add_argument(
     help="Path to database directory"
 )
 
+parser.add_argument(
+    "--device",
+    type=str,
+    help="The device to use for AI (e.g. cuda:0 or cpu"
+)
+
 parsed_args = parser.parse_args()
 
 if parsed_args.load and parsed_args.save:
