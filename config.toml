@@ -21,7 +21,7 @@
 
 [general]
 model_name = "all-MiniLM-L6-v2"
-device = "cuda" # Not all GPUs are supported. Set to "cpu" if there are errors.
+device = "cpu" # Set to "cuda" for better performance (only if you have a modern GPU)
 # TODO: raranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 [database]
