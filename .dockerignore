@@ -23,6 +23,6 @@ resources
 __pycache__
 .git
 .cache
-venv
+.venv
 input
 output
