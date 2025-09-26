@@ -19,11 +19,31 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-[general]
-model_name = "all-MiniLM-L6-v2"
-device = "cuda" # Not all GPUs are supported. Set to "cpu" if there are errors.
-# TODO: raranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+import torch
 
-[database]
-directory = "output"
-save_filenames = false  # WARNING if you use this: ALL your files must be named with real words or you'll get unpredictable results
+
+class NoCUDAError(Exception):
+    """
+    Exception raised when CUDA is requested, but it's unavailable
+    """
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
+def get_device(device: str | None = None) -> str:
+    cuda_available = torch.cuda.is_available()
+
+    if (
+        device is not None and
+        device.startswith("cuda") and not cuda_available
+    ):
+        raise NoCUDAError(
+            f"CUDA requested but not available: {device}"
+        )
+
+    if device is None and not torch.cuda.is_available():
+        return "cpu"
+
+    return device
