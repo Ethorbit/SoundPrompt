@@ -19,6 +19,7 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
 import chromadb
 from soundprompt.retrieval import retrieval
 from sentence_transformers import SentenceTransformer

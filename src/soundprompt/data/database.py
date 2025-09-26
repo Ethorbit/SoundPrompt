@@ -19,6 +19,7 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
 import re
 import chromadb
 import os
@@ -191,7 +192,9 @@ class Data:
                         tag
                     )
                 ],
-                embeddings=[self.model.encode(tag)],
+                embeddings=[
+                    self.model.encode(tag, show_progress_bar=False)
+                ],
                 metadatas=[{
                     "tag_file": tag_data.file_path,
                     "audio_file": audio_file_path,
