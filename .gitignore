@@ -21,6 +21,6 @@
 
 __pycache__
 .cache
-venv
+.venv
 input
 output
