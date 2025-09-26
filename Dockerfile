@@ -25,7 +25,9 @@ ARG GID=1000
 COPY --chown=${UID}:${GID} requirements.txt .
 RUN groupadd -g ${GID} python &&\
     useradd -m -g ${GID} -u ${UID} python &&\
-    pip install -r requirements.txt
+    pip install -r requirements.txt &&\
+    apt update -y &&\
+    apt install -y ffmpeg
 
 
 FROM base AS develop

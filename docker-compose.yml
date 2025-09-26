@@ -19,22 +19,32 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+# DISCLAIMER:
+# ONLY WORKS AS-IS ON: Linux + ALSA / Pulseaudio
+# CHANGES NEEDED IF YOUR SETUP IS ANY DIFFERENT!!
+
 x-shared: &shared
+  group_add:
+    - audio
+  environment:
+    - PULSE_SERVER=unix:/run/user/${UID:-1000}/pulse/native
   devices:
     - "nvidia.com/gpu=all"
     - "/dev/dri:/dev/dri"
+    - "/dev/snd:/dev/snd"
 
 x-build: &build
   context: .    
   args:
-    UID: ${LOCAL_UID:-1000}
-    GID: ${LOCAL_GID:-1000}
+    UID: ${UID:-1000}
+    GID: ${GID:-1000}
 
 x-develop: &develop
   build:
     <<: [ *build ]
     target: develop
   volumes:
+    - /run/user/${UID:-1000}/pulse:/run/user/${UID:-1000}/pulse
     - .:/app
     - .cache:/home/python/.cache
     - ./input:/input:ro
@@ -64,5 +74,6 @@ services:
       <<: [ *build ]
       target: app
     volumes:
+      - /run/user/${UID:-1000}/pulse:/run/user/${UID:-1000}/pulse
       - ./input:/input:ro
       - ./output:/output

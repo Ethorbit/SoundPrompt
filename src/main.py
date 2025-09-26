@@ -21,25 +21,31 @@
 
 # TODO: add VTT
 
-import logging                           # noqa: E402
-logging.basicConfig(level=logging.INFO)  # noqa: E402
-logger = logging.getLogger(__name__)     # noqa: E402
-logger.info("Loading model...")  # noqa: E402 sentence_transformers: ~7s delay
-
-from soundprompt.console import Console, CommandLoop
-from soundprompt.retrieval.prompter import Prompter
+import logging
 from soundprompt.config import args
 from soundprompt.config.config import load_config
+args = args.get_args()                   # noqa: E402
+cfg = load_config()                      # noqa: E402
+logging.basicConfig(level=logging.INFO)  # noqa: E402
+logger = logging.getLogger(__name__)     # noqa: E402
+logger.info("Loading model..")  # noqa: E402 sentence_transformers: ~7s delay
+
+# import sounddevice
+from pydub import AudioSegment
+import pydub.playback as playback
+
+from soundprompt.device import get_device
+from soundprompt.console import Console, CommandLoop
+from soundprompt.retrieval.prompter import Prompter
 from soundprompt.data import database
 from sentence_transformers import SentenceTransformer
 
-cfg = load_config()
+device = get_device(cfg["general"]["device"])
+logger.info(f"Requested device: {device}")
 
 model_name = cfg["general"]["model_name"]
-model = SentenceTransformer(model_name)
+model = SentenceTransformer(model_name, device=device)
 logger.info("Model ready!")
-
-args = args.get_args()
 
 if args.save or args.load:
     logger.info("Loading database...")
@@ -50,8 +56,17 @@ if args.save or args.load:
     )
     logger.info("Database ready!")
 
+
 if args.save:
-    data.update()
+    logger.info("Saving..")
+
+    try:
+        data.update()
+    except Exception as e:
+        logger.error(f"Failed to save: {e}")
+    finally:
+        logger.info("Saved")
+
 
 if args.load:
     collection = data.get_collection()
@@ -59,7 +74,15 @@ if args.load:
 
     def enter_prompt(prompt: str):
         file = prompter.prompt(prompt)
-        print(file)
+        file_data = None
+
+        try:
+            file_data = AudioSegment.from_file(file)
+            playback.play(file_data)
+        except Exception as e:
+            logger.error(
+                f"Failed to play {file} - {e}"
+            )
 
     if args.prompt:
         enter_prompt(args.prompt)
