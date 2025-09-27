@@ -27,7 +27,10 @@ RUN groupadd -g ${GID} python &&\
     useradd -m -g ${GID} -u ${UID} python &&\
     pip install -r requirements.txt &&\
     apt update -y &&\
-    apt install -y ffmpeg
+    apt install -y \
+        pulseaudio \
+        ffmpeg \
+        libportaudio2
 
 
 FROM base AS develop

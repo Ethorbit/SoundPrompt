@@ -30,10 +30,7 @@ logging.basicConfig(level=logging.INFO)  # noqa: E402
 logger = logging.getLogger(__name__)     # noqa: E402
 logger.info("Loading model..")  # noqa: E402 sentence_transformers: ~7s delay
 
-# import sounddevice
-from pydub import AudioSegment
-import pydub.playback as playback
-
+from soundprompt.sound import SoundPlayer
 from soundprompt.device import get_device
 from soundprompt.console import Console, CommandLoop
 from soundprompt.retrieval.prompter import Prompter
@@ -63,7 +60,7 @@ if args.save:
     try:
         data.update()
     except Exception as e:
-        logger.error(f"Failed to save: {e}")
+        logger.error(f"Failed to save - {e}")
     finally:
         logger.info("Saved")
 
@@ -71,30 +68,29 @@ if args.save:
 if args.load:
     collection = data.get_collection()
     prompter = Prompter(model=model, collection=collection)
+    sound_player = SoundPlayer()
 
     def enter_prompt(prompt: str):
         file = prompter.prompt(prompt)
-        file_data = None
 
         try:
-            file_data = AudioSegment.from_file(file)
-            playback.play(file_data)
+            sound_player.play(file)
         except Exception as e:
             logger.error(
-                f"Failed to play {file} - {e}"
+                f"Failed to play sound - {e}"
             )
 
     if args.prompt:
         enter_prompt(args.prompt)
     else:
-        commandLoop = CommandLoop()
+        command_loop = CommandLoop()
 
         def on_command(cmd: str):
             enter_prompt(cmd)
 
-        commandLoop.event.subscribe(on_command)
-        console = Console(commandLoop)
-        commandLoop.start()
+        command_loop.event.subscribe(on_command)
+        console = Console(command_loop)
+        command_loop.start()
         console.start()
         console.join()
-        commandLoop.stop()
+        command_loop.stop()

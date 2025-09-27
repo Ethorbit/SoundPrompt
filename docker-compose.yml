@@ -20,7 +20,7 @@
 #
 
 # DISCLAIMER:
-# ONLY WORKS AS-IS ON: Linux + ALSA / Pulseaudio
+# ONLY WORKS AS-IS ON: Linux + Pulseaudio
 # CHANGES NEEDED IF YOUR SETUP IS ANY DIFFERENT!!
 
 x-shared: &shared
