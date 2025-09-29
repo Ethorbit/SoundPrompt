@@ -48,8 +48,5 @@ VOLUME /input /output
 COPY --chown=${UID}:${GID} src ./src
 COPY --chown=${UID}:${GID} config.toml .
 USER ${UID}:${GID}
-# Run the script in the image to
-# preinstall the model
-RUN python src/main.py
 ENTRYPOINT [ "python" ]
-CMD [ "./src/main.py $@" ]
+CMD [ "python", "src/main.py" ]
