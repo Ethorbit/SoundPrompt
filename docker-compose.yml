@@ -19,14 +19,19 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+
 # DISCLAIMER:
-# ONLY WORKS AS-IS ON: Linux + Pulseaudio
-# CHANGES NEEDED IF YOUR SETUP IS ANY DIFFERENT!!
+# This container ONLY WORKS AS-IS ON: Linux + X11 + Pulseaudio
+#   You need to run xhost +SI:localuser:YOURUSERNAME
+#   for hotkey functionality
+# CHANGES ARE NEEDED IF YOUR SETUP IS ANY DIFFERENT!!
+
 
 x-shared: &shared
   group_add:
     - audio
   environment:
+    - DISPLAY=${DISPLAY}
     - PULSE_SERVER=unix:/run/user/${UID:-1000}/pulse/native
   devices:
     - "nvidia.com/gpu=all"
@@ -44,6 +49,7 @@ x-develop: &develop
     <<: [ *build ]
     target: develop
   volumes:
+    - /tmp/.X11-unix:/tmp/.X11-unix
     - /run/user/${UID:-1000}/pulse:/run/user/${UID:-1000}/pulse
     - .:/app
     - .cache:/home/python/.cache
@@ -74,6 +80,7 @@ services:
       <<: [ *build ]
       target: app
     volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
       - /run/user/${UID:-1000}/pulse:/run/user/${UID:-1000}/pulse
       - ./input:/input:ro
       - ./output:/output

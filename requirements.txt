@@ -3,3 +3,4 @@ sentence-transformers==5.1.0
 chromadb==1.0.20
 pydub==0.25.1
 sounddevice==0.5.2
+pynput==1.8.1

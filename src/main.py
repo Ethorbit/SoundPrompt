@@ -36,6 +36,7 @@ from soundprompt.console import Console, CommandLoop
 from soundprompt.retrieval.prompter import Prompter
 from soundprompt.data import database
 from sentence_transformers import SentenceTransformer
+from pynput import keyboard
 
 device = get_device(cfg["general"]["device"])
 logger.info(f"Requested device: {device}")
@@ -83,12 +84,15 @@ if args.load:
     if args.prompt:
         enter_prompt(args.prompt)
     else:
+        global_hotkeys = keyboard.GlobalHotKeys({
+            cfg["hotkeys"]["stop_sound"]:
+                lambda: sound_player.stop()
+        }).start()
+
         command_loop = CommandLoop()
-
-        def on_command(cmd: str):
-            enter_prompt(cmd)
-
-        command_loop.event.subscribe(on_command)
+        command_loop.event.subscribe(
+            lambda cmd: enter_prompt(cmd)
+        )
         console = Console(command_loop)
         command_loop.start()
         console.start()
