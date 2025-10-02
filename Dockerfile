@@ -46,9 +46,7 @@ ENTRYPOINT [ "bash" ]
 FROM base AS app
 WORKDIR /home/python
 VOLUME /input /output
-# TODO:
-# ADD <.whl url> from a Release
+ADD https://github.com/Ethorbit/SoundPrompt/releases/download/v0.1.0/soundprompt-0.1.0-py3-none-any.whl .
 RUN pip install --no-build-isolation *.whl
 USER ${UID}:${GID}
-ENTRYPOINT [ "python" ]
-CMD [ "python", "src/main.py" ]
+ENTRYPOINT [ "soundprompt" ]
