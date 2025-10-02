@@ -19,6 +19,12 @@ GNU General Public License along with SoundPrompt.
 If not, see <https://www.gnu.org/licenses/>.
 -->
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Release](https://img.shields.io/github/release/Ethorbit/SoundPrompt.svg)](https://github.com/Ethorbit/SoundPrompt/releases)
+[![PyPI version](https://img.shields.io/pypi/v/soundprompt.svg)](https://pypi.org/project/soundprompt/)
+[![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://github.com/Ethorbit/SoundPrompt/wiki)
+[![issues](https://img.shields.io/github/issues/Ethorbit/SoundPrompt)](https://github.com/Ethorbit/SoundPrompt/issues?q=is%3Aopen+is%3Aissue)
+
 # SoundPrompt
 ## Your sounds, triggered by AI
 
