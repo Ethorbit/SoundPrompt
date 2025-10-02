@@ -20,10 +20,11 @@
 #
 
 from __future__ import annotations
+import logging
 import re
 import chromadb
 import os
-import json
+from soundprompt.config.toml.structure import Config
 from soundprompt.data.tag import (
     TaggedFileMissingError,
     TagData,
@@ -33,6 +34,7 @@ from typing import Any
 from soundprompt.data import filesystem
 from sentence_transformers import SentenceTransformer
 
+logger = logging.getLogger(__name__)
 
 # TODO: add progress bar or loading animation
 # 100 files takes ~5 seconds to save
@@ -57,7 +59,7 @@ class Data:
     (hundreds of thousands of files).
     """
 
-    config: dict[str, Any]
+    config: Config
     client: chromadb.PersistentClient
     model: SentenceTransformer
     directory: str
@@ -66,14 +68,14 @@ class Data:
 
     def __init__(
         self,
-        config: dict[str],
+        config: Config,
         model: SentenceTransformer,
         library_directory: str
     ):
         self.config = config
         self.model = model
 
-        data_directory = config["database"]["directory"]
+        data_directory = config.database.directory
         for d in [data_directory, library_directory]:
             filesystem.validate_directory(d)
 
@@ -116,13 +118,13 @@ class Data:
                 self.library_directory,
                 "settings",
             )],
-            documents=[json.dumps(self.config)]
+            documents=[self.config.to_json()]
         )
 
     def collection_get_config(
         self,
         collection: chromadb.Collection
-    ) -> Any:
+    ) -> Config:
         item = collection.get(
             ids=[self.create_key(
                 self.library_directory,
@@ -131,8 +133,17 @@ class Data:
             include=["documents"]
         )
 
-        if item["ids"]:
-            return json.loads(item["documents"][0])
+        config = Config()
+
+        try:
+            config = Config.from_json(item["documents"][0])
+        except Exception as e:
+            logger.error(f"Failed to get config - {e}")
+        else:
+            if item["ids"]:
+                return config
+
+        return config
 
     def collection_get_file_tags(
         self,
@@ -149,7 +160,7 @@ class Data:
                 for tag in f.read().lower().split(",")
             ])
 
-            if self.config["database"]["save_filenames"]:
+            if self.config.database.save_filenames:
                 file_name, _ = filesystem.split_extension(tag_data.file_name)
                 tags.add(file_name.lower())
 
@@ -226,12 +237,12 @@ class Data:
         collection_config = self.collection_get_config(collection)
         if collection_config:
             if (
-                self.config["database"]["save_filenames"]
-                != collection_config["database"]["save_filenames"]
+                self.config.database.save_filenames
+                != collection_config.database.save_filenames
             ) or (
                 # Models change embeddings entirely
-                self.config["general"]["model_name"]
-                != collection_config["general"]["model_name"]
+                self.config.general.model_name
+                != collection_config.general.model_name
             ):
                 force_file_update = True
 
@@ -295,7 +306,7 @@ class Data:
                             audio_file_path=audio_file_path
                         )
 
-                        print(f"Updated {tags_file_path}")
+                        logger.info(f"Updated {tags_file_path}")
 
         self.collection_update_config(collection)
 
@@ -319,7 +330,7 @@ class Data:
             try:
                 filesystem.validate_file(result_audio_file)
             except FileExistsError:
-                print(
+                logger.error(
                     (
                         "Removing entry for missing audio file:"
                         f" {result_audio_file}"

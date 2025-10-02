@@ -18,15 +18,3 @@
 # GNU General Public License along with SoundPrompt.
 # If not, see <https://www.gnu.org/licenses/>.
 #
-
-[general]
-model_name = "all-MiniLM-L6-v2"
-device = "cpu" # Set to "cuda" for better performance (only if you have a modern GPU)
-# TODO: raranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-
-[hotkeys]  # Uses pynput hotkey syntax
-stop_sound = "<shift>+<esc>"
-
-[database]
-directory = "output"
-save_filenames = false  # WARNING if you use this: ALL your files must be named with real words or you'll get unpredictable results

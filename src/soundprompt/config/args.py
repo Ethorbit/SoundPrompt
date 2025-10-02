@@ -36,6 +36,12 @@ parser = ArgumentParser(
 )
 
 parser.add_argument(
+    "--config",
+    type=Path,
+    help="The path to the config.toml file"
+)
+
+parser.add_argument(
     "-s",
     "--save",
     type=Path,

@@ -20,6 +20,11 @@
 #
 
 __pycache__
+*.whl
+*.egg-info/
+*.egg
+dist
+build
 .cache
 .venv
 input

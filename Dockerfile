@@ -22,10 +22,8 @@
 FROM python:3.11 AS base
 ARG UID=1000
 ARG GID=1000
-COPY --chown=${UID}:${GID} requirements.txt .
 RUN groupadd -g ${GID} python &&\
     useradd -m -g ${GID} -u ${UID} python &&\
-    pip install -r requirements.txt &&\
     apt update -y &&\
     apt install -y \
         pulseaudio \
@@ -34,10 +32,13 @@ RUN groupadd -g ${GID} python &&\
 
 
 FROM base AS develop
+ENV PYTHONPATH=/app/src
 WORKDIR /app
 VOLUME /app
-COPY --chown=${UID}:${GID} ./requirements-dev.txt .
-RUN pip install -r requirements-dev.txt
+COPY --chown=${UID}:${GID} pyproject.toml .
+RUN pip install \
+    --no-build-isolation \
+    --editable .[dev]
 USER ${UID}:${GID}
 ENTRYPOINT [ "bash" ]
 
@@ -45,8 +46,9 @@ ENTRYPOINT [ "bash" ]
 FROM base AS app
 WORKDIR /home/python
 VOLUME /input /output
-COPY --chown=${UID}:${GID} src ./src
-COPY --chown=${UID}:${GID} config.toml .
+# TODO:
+# ADD <.whl url> from a Release
+RUN pip install --no-build-isolation *.whl
 USER ${UID}:${GID}
 ENTRYPOINT [ "python" ]
 CMD [ "python", "src/main.py" ]

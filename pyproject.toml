@@ -1,0 +1,59 @@
+# LICENSE HEADER MANAGED BY add-license-header
+#
+# Copyright (C) 2025 Ethorbit
+#
+# This file is part of SoundPrompt.
+#
+# SoundPrompt is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation, either version 3
+# of the License, or (at your option) any later version.
+#
+# SoundPrompt is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the
+# GNU General Public License along with SoundPrompt.
+# If not, see <https://www.gnu.org/licenses/>.
+#
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "soundprompt"
+version = "0.1.0"
+description = "Your sounds, triggered by AI prompts"
+authors = [
+  { name="Ethorbit" }
+]
+requires-python = ">=3.11,<4"
+dependencies = [
+    "tomli-w==1.2.0",
+    "prompt-toolkit==3.0.52",
+    "sentence-transformers==5.1.0",
+    "chromadb==1.0.20",
+    "pydub==0.25.1",
+    "sounddevice==0.5.2",
+    "pynput==1.8.1"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre_commit==4.3.0",
+    "add_license_header==2.4.0",
+    "pyflakes>=3.4.0",
+    "pylint>=3.3.8",
+    "pycodestyle>=2.14.0",
+    "flake8>=7.3.0",
+    "python-lsp-server>=1.13.1"
+]
+
+[project.scripts]
+soundprompt = "soundprompt.main:main"
+
+#[tool.setuptools.packages.find]
+#where = ["src"]

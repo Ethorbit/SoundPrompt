@@ -27,6 +27,10 @@ def split_extension(path: str) -> tuple[str, str]:
     return os.path.splitext(path)
 
 
+def create_file_dirs(path: str) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+
 class RecursiveScanDir:
     """
     Recursively scan a directory very quickly,
