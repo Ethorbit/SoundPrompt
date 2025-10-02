@@ -82,5 +82,6 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /run/user/${UID:-1000}/pulse:/run/user/${UID:-1000}/pulse
+      - .cache:/home/python/.cache
       - ./input:/input:ro
       - ./output:/output
