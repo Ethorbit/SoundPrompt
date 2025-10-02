@@ -27,6 +27,7 @@ build-backend = "setuptools.build_meta"
 name = "soundprompt"
 version = "0.1.0"
 description = "Your sounds, triggered by AI prompts"
+readme = "README.md"
 authors = [
   { name="Ethorbit" }
 ]
@@ -54,6 +55,3 @@ dev = [
 
 [project.scripts]
 soundprompt = "soundprompt.main:main"
-
-#[tool.setuptools.packages.find]
-#where = ["src"]
