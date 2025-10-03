@@ -85,12 +85,16 @@ def main():
                     f"Failed to play sound - {e}"
                 )
 
+        def press_stop_sound():
+            logger.debug("stop_sound hotkey")
+            sound_player.stop()
+
         if args.prompt:
             enter_prompt(args.prompt)
         else:
             keyboard.GlobalHotKeys({
                 cfg.hotkeys.stop_sound:
-                    lambda: sound_player.stop()
+                    press_stop_sound
             }).start()
 
             command_loop = CommandLoop()
