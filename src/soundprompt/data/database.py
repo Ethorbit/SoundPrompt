@@ -142,7 +142,7 @@ class Data:
         try:
             config = Config.from_json(item["documents"][0])
         except Exception as e:
-            logger.error(f"Failed to get config - {e}")
+            self.logger.error(f"Failed to get config - {e}")
         else:
             if item["ids"]:
                 return config
@@ -315,7 +315,7 @@ class Data:
                             audio_file_path=audio_file_path
                         )
 
-                        logger.info(f"Updated {tags_file_path}")
+                        self.logger.info(f"Updated {tags_file_path}")
 
         self.collection_update_config(collection)
 
@@ -339,7 +339,7 @@ class Data:
             try:
                 filesystem.validate_file(result_audio_file)
             except FileExistsError:
-                logger.error(
+                self.logger.error(
                     (
                         "Removing entry for missing audio file:"
                         f" {result_audio_file}"
