@@ -46,12 +46,16 @@ def main():
     model = SentenceTransformer(model_name, device=device)
     logger.info("Model ready!")
 
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
     if args.save or args.load:
         logger.info("Loading database...")
         data = database.Data(
             config=cfg,
             model=model,
-            library_directory=(args.save or args.load)
+            library_directory=(args.save or args.load),
+            debug=args.debug
         )
         logger.info("Database ready!")
 
@@ -74,6 +78,7 @@ def main():
             file = prompter.prompt(prompt)
 
             try:
+                logger.debug(f"Prompted {file}")
                 sound_player.play(file)
             except Exception as e:
                 logger.error(

@@ -30,11 +30,9 @@ from soundprompt.data.tag import (
     TagData,
     Tags
 )
-from typing import Any
 from soundprompt.data import filesystem
 from sentence_transformers import SentenceTransformer
 
-logger = logging.getLogger(__name__)
 
 # TODO: add progress bar or loading animation
 # 100 files takes ~5 seconds to save
@@ -60,6 +58,7 @@ class Data:
     """
 
     config: Config
+    logger: logging.Logger
     client: chromadb.PersistentClient
     model: SentenceTransformer
     directory: str
@@ -70,8 +69,13 @@ class Data:
         self,
         config: Config,
         model: SentenceTransformer,
-        library_directory: str
+        library_directory: str,
+        debug: bool = False
     ):
+        self.logger = logging.getLogger(self.__class__.__name__)
+        if debug:
+            self.logger.setLevel(logging.DEBUG)
+
         self.config = config
         self.model = model
 
@@ -261,6 +265,11 @@ class Data:
             )
 
             audio_file_path = os.path.join(tag_data.directory, file_stem)
+            self.logger.debug(
+                f"Combining directory {tag_data.directory} "
+                f"and file stem: {file_stem} "
+                f"result: {audio_file_path}"
+            )
 
             try:
                 filesystem.validate_file(audio_file_path)

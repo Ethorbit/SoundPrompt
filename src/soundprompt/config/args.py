@@ -84,6 +84,12 @@ parser.add_argument(
     help="The device to use for AI (e.g. cuda:0 or cpu"
 )
 
+parser.add_argument(
+    "--debug",
+    action="store_true",
+    help="Enable debug messages"
+)
+
 parsed_args = parser.parse_args()
 
 if parsed_args.load and parsed_args.save:
