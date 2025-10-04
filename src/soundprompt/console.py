@@ -63,8 +63,17 @@ class Console(Worker):
         self.commandLoop = commandLoop
         history = InMemoryHistory()
         self.history = history
-        self._prompt_session = PromptSession(history=history)
-        self._command_queue = Queue()
+        self._prompt_session = PromptSession(
+            message="> ",
+            history=history,
+            enable_suspend=False,
+            enable_open_in_editor=False,
+            enable_system_prompt=False,
+            mouse_support=False,
+            validate_while_typing=False,
+            complete_while_typing=False,
+            reserve_space_for_menu=0
+        )
 
     def send_command(self, command: str) -> None:
         self.commandLoop.submit(command)
@@ -73,7 +82,7 @@ class Console(Worker):
         with patch_stdout():
             while not self.is_stopped():
                 try:
-                    cmd = self._prompt_session.prompt(">>>").strip().lower()
+                    cmd = self._prompt_session.prompt().strip().lower()
                     if not cmd:
                         continue
 
