@@ -22,7 +22,6 @@
 import sounddevice
 import numpy as np
 from pydub import AudioSegment
-from threading import Thread
 
 
 class SoundPlayer:
@@ -42,14 +41,10 @@ class SoundPlayer:
         if segment.channels > 1:
             samples = samples.reshape((-1, segment.channels))
 
-        Thread(
-            target=sounddevice.play,
-            args=(samples,),
-            kwargs={
-                "samplerate": sample_rate
-            },
-            daemon=True
-        ).start()
+        sounddevice.play(
+            samples,
+            samplerate=sample_rate
+        )
 
     def stop(self) -> None:
-        Thread(target=sounddevice.stop(), daemon=True).start()
+        sounddevice.stop()
