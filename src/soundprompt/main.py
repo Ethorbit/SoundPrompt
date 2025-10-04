@@ -90,7 +90,10 @@ async def main():
 
         def press_stop_sound():
             logger.debug("stop_sound hotkey")
-            sound_player.stop()
+            try:
+                sound_player.stop()
+            except Exception as e:
+                logger.error(f"Failed to stop sound - {e}")
 
         if args.prompt:
             enter_prompt(args.prompt)
