@@ -19,52 +19,74 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-from queue import Queue
-from soundprompt.worker import Worker
+import asyncio
 from soundprompt.event import Event
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.patch_stdout import patch_stdout
 
-class CommandLoop(Worker):
+
+class CommandQueue:
     """
-    Handles processing of commands
+    Handles processing of commands asynchronously
     """
 
-    _queue: Queue[str]
+    _running: bool
+    _queue: asyncio.Queue[str]
     event: Event
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._queue = Queue()
+        self._queue = asyncio.Queue()
         self.event = Event()
 
-    def run(self) -> None:
-        while not self.is_stopped():
-            if not self._queue.empty():
-                cmd = self._queue.get()
-                self.event.notify(cmd)
+    async def run(self) -> None:
+        self._running = True
 
-    def submit(self, cmd: str) -> None:
-        self._queue.put(cmd)
+        while self._running:
+            try:
+                cmd = await self._queue.get()
+            except asyncio.CancelledError:
+                break
+
+            try:
+                await self.event.notify_async(cmd)
+            finally:
+                self._queue.task_done()
+
+    def stop(self):
+        self._running = False
+
+    async def submit(self, cmd: str) -> None:
+        await self._queue.put(cmd)
+
+    def submit_threadsafe(self, cmd: str) -> None:
+        loop = asyncio.get_event_loop()
+
+        asyncio.run_coroutine_threadsafe(
+            self.submit(cmd),
+            loop
+        )
 
 
-class Console(Worker):
+class Console:
     """
     Class for CLI console
     """
 
-    commandLoop: CommandLoop
+    commandQueue: CommandQueue
     history: InMemoryHistory
     _prompt_session: PromptSession
+    _running: bool
 
-    def __init__(self, commandLoop: CommandLoop, *args, **kwargs):
+    def __init__(self, commandQueue: CommandQueue, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.commandLoop = commandLoop
+        self.commandQueue = commandQueue
         history = InMemoryHistory()
         self.history = history
         self._prompt_session = PromptSession(
             message="> ",
+            auto_suggest=False,
             history=history,
             enable_suspend=False,
             enable_open_in_editor=False,
@@ -75,19 +97,29 @@ class Console(Worker):
             reserve_space_for_menu=0
         )
 
-    def send_command(self, command: str) -> None:
-        self.commandLoop.submit(command)
+    async def send_command(self, command: str) -> None:
+        await self.commandQueue.submit(command)
 
-    def run(self) -> None:
+    async def run(self) -> None:
+        self._running = True
+
         with patch_stdout():
-            while not self.is_stopped():
+            while self._running:
                 try:
-                    cmd = self._prompt_session.prompt().strip().lower()
+                    cmd = await self._prompt_session.prompt_async()
+                    cmd = cmd .strip().lower()
+
                     if not cmd:
                         continue
 
-                    self.history.append_string(cmd)
-                    self.send_command(cmd)
-                except (KeyboardInterrupt, EOFError):
+                    await self.send_command(cmd)
+                except (
+                    asyncio.exceptions.CancelledError,
+                    KeyboardInterrupt,
+                    EOFError
+                ):
                     print("\nInterrupted. Exiting...")
                     break
+
+    def stop(self):
+        self._running = False

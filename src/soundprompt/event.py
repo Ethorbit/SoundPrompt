@@ -19,6 +19,9 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+import asyncio
+
+
 class Event():
     _subscribers: list
 
@@ -34,3 +37,10 @@ class Event():
     def notify(self, *args, **kwargs) -> None:
         for cb in self._subscribers:
             cb(*args, **kwargs)
+
+    async def notify_async(self, *args, **kwargs) -> None:
+        for cb in self._subscribers:
+            if asyncio.iscoroutinefunction(cb):
+                await cb(*args, **kwargs)
+            else:
+                cb(*args, **kwargs)

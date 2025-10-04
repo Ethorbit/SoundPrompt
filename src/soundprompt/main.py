@@ -21,7 +21,10 @@
 
 # TODO: add VTT
 
-def main():
+import asyncio
+
+
+async def main():
     import logging
     from soundprompt.config.toml.config import ConfigSystem
     from soundprompt.config import args
@@ -33,7 +36,7 @@ def main():
 
     from soundprompt.sound import SoundPlayer
     from soundprompt.device import get_device
-    from soundprompt.console import Console, CommandLoop
+    from soundprompt.console import Console, CommandQueue
     from soundprompt.retrieval.prompter import Prompter
     from soundprompt.data import database
     from sentence_transformers import SentenceTransformer
@@ -92,21 +95,24 @@ def main():
         if args.prompt:
             enter_prompt(args.prompt)
         else:
+            # TODO: fix hotkey and sound blocking
+            # this thread that users will be
+            # typing prompts on
             keyboard.GlobalHotKeys({
                 cfg.hotkeys.stop_sound:
                     press_stop_sound
             }).start()
 
-            command_loop = CommandLoop()
-            command_loop.event.subscribe(
+            command_queue = CommandQueue()
+            command_queue.event.subscribe(
                 lambda cmd: enter_prompt(cmd)
             )
-            console = Console(command_loop)
-            command_loop.start()
-            console.start()
-            console.join()
-            command_loop.stop()
+            console = Console(command_queue)
 
+            asyncio.create_task(command_queue.run())
+            console_task = asyncio.create_task(console.run())
+            await console_task
+            command_queue.stop()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
