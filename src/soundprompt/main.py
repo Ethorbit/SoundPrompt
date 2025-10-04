@@ -24,7 +24,7 @@
 import asyncio
 
 
-async def main():
+async def main_async():
     import logging
     from soundprompt.config.toml.config import ConfigSystem
     from soundprompt.config import args
@@ -41,6 +41,8 @@ async def main():
     from soundprompt.data import database
     from sentence_transformers import SentenceTransformer
     from pynput import keyboard
+
+    event_loop = asyncio.get_event_loop()
 
     device = get_device(cfg.general.device)
     logger.info(f"Requested device: {device}")
@@ -114,5 +116,10 @@ async def main():
             await console_task
             command_queue.stop()
 
+
+def main():
+    asyncio.run(main_async())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main_async())
