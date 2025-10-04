@@ -98,9 +98,6 @@ async def main():
         if args.prompt:
             enter_prompt(args.prompt)
         else:
-            # TODO: fix hotkey and sound blocking
-            # this thread that users will be
-            # typing prompts on
             keyboard.GlobalHotKeys({
                 cfg.hotkeys.stop_sound:
                     press_stop_sound
