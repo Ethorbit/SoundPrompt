@@ -20,6 +20,7 @@
 #
 
 import asyncio
+from signal import signal, SIGINT, SIG_IGN
 from soundprompt.event import Event
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
@@ -119,6 +120,9 @@ class Console:
                     EOFError
                 ):
                     print("\nInterrupted. Exiting...")
+
+                    signal(SIGINT, SIG_IGN)
+
                     break
 
     def stop(self):
