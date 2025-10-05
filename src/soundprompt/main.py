@@ -39,6 +39,13 @@ async def main_async():
         print(get_version())
         exit()
 
+    if args.load and args.save:
+        logger.error("You cannot load and save at the same time!")
+        exit()
+    if not args.load and not args.save:
+        logger.error("You must specify either --load or --save!")
+        exit()
+
     print(get_version())
     logger.info("Loading model..")  # noqa: E402 sentence_transformers: ~7s delay
 
@@ -61,11 +68,6 @@ async def main_async():
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
-
-    if args.load and args.save:
-        logger.error("You cannot load and save at the same time!")
-    if not args.load and not args.save:
-        logger.error("You must specify either --load or --save!")
 
     if args.save or args.load:
         logger.info("Loading database...")
