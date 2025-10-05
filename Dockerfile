@@ -44,9 +44,10 @@ ENTRYPOINT [ "bash" ]
 
 
 FROM base AS app
+ARG VERSION="0.1.2"
 WORKDIR /home/python
 VOLUME /input /output
-ADD https://github.com/Ethorbit/SoundPrompt/releases/download/v0.1.0/soundprompt-0.1.0-py3-none-any.whl .
+ADD https://github.com/Ethorbit/SoundPrompt/releases/download/v${VERSION}/soundprompt-${VERSION}-py3-none-any.whl .
 RUN pip install --no-build-isolation *.whl
 USER ${UID}:${GID}
 ENTRYPOINT [ "soundprompt" ]
