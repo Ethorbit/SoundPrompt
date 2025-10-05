@@ -20,7 +20,6 @@
 #
 
 from __future__ import annotations
-from soundprompt.data.filesystem import create_file_dirs
 from soundprompt.config.toml import structure
 from soundprompt.data import filesystem
 import tomllib
@@ -46,16 +45,20 @@ class ConfigSystem:
     def __init__(self, args: Namespace):
         self._args = args
 
-        config_path = self.get_config_path()
+        config_dir = self.get_config_directory()
+        config_file = config_dir / "config.toml"
 
-        if not config_path.exists():
+        # Write a default config if one doesn't exist
+        if not config_file.exists():
+            os.makedirs(config_dir, exist_ok=True)
+
             self.config = structure.Config()
-            create_file_dirs(str(config_path))
-            self.config.save_toml(str(config_path))
+            self.config.database.directory = str(config_dir)
+            self.config.save_toml(str(config_file))
 
         self.config = self._load_config()
 
-    def get_config_path(self) -> Path:
+    def get_config_directory(self) -> Path:
         """
         Returns the location for the program's config file
 
@@ -70,9 +73,9 @@ class ConfigSystem:
         if os.name == "nt":
             return Path(
                     os.getenv("APPDATA", "")
-                ) / "soundprompt" / "config.toml"
+                ) / "soundprompt"
         else:
-            return Path.home() / ".soundprompt" / "config.toml"
+            return Path.home() / ".config" / "soundprompt"
 
     def _load_config(self) -> structure.Config:
         """
@@ -81,14 +84,15 @@ class ConfigSystem:
         Note: overrides values with CLI args
         """
 
-        config_path = self.get_config_path()
+        config_dir = self.get_config_directory()
+        config_file = config_dir / "config.toml"
 
-        if not config_path.exists():
+        if not config_file.exists():
             raise FileNotFoundError(
-                f"config.toml missing, needed at {config_path}"
+                f"config.toml missing, needed at {config_file}"
             )
 
-        with open(config_path, "rb") as f:
+        with open(config_file, "rb") as f:
             cfg = tomllib.load(f)
 
             if self._args.save_filenames is True:
