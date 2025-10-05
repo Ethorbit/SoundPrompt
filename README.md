@@ -35,6 +35,6 @@ SoundPrompt is a tool that plays your prerecorded audio files with AI prompts. I
 [Installation](https://github.com/Ethorbit/SoundPrompt/wiki/Installation) | [Usage](https://github.com/Ethorbit/SoundPrompt/wiki/Usage)
 
 ## Soundboard: a relic of the past!
-![Sound Selection Time chart](https://github.com/Ethorbit/SoundPrompt/blob/5c9a5bbbfb8cbf2e7bbe8d850e3789ea2c2ea38d/resources/sound-selection-time-chart.png)
+![Sound Selection Time chart](./resources/sound-selection-time-chart.png)
 
 Using mechanical or software controls to trigger sounds is an unintuitive process that requires practice and scales horribly. SoundPrompt solves these problems by utilizing the power of Artificial Intelligence and modern hardware to play the sounds you want, faster than you ever could.
