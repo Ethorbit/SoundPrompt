@@ -26,12 +26,20 @@ import asyncio
 
 async def main_async():
     import logging
+
     from soundprompt.config.toml.config import ConfigSystem
     from soundprompt.config import args
+    from soundprompt.version import get_version
     args = args.get_args()                     # noqa: E402
     cfg = ConfigSystem(args).config            # noqa: E402
     logging.basicConfig(level=logging.INFO)    # noqa: E402
     logger = logging.getLogger(__name__)       # noqa: E402
+
+    if args.version:
+        print(get_version())
+        exit()
+
+    print(get_version())
     logger.info("Loading model..")  # noqa: E402 sentence_transformers: ~7s delay
 
     from soundprompt.sound import SoundPlayer
@@ -53,6 +61,11 @@ async def main_async():
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
+
+    if args.load and args.save:
+        logger.error("You cannot load and save at the same time!")
+    if not args.load and not args.save:
+        logger.error("You must specify either --load or --save!")
 
     if args.save or args.load:
         logger.info("Loading database...")

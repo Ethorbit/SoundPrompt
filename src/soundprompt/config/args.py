@@ -90,13 +90,12 @@ parser.add_argument(
     help="Enable debug messages"
 )
 
+parser.add_argument(
+    "--version",
+    action="store_true"
+)
+
 parsed_args = parser.parse_args()
-
-if parsed_args.load and parsed_args.save:
-    parser.error("You cannot load and save at the same time!")
-
-if not parsed_args.load and not parsed_args.save:
-    parser.error("You must specify either --load or --save!")
 
 
 def get_args() -> Namespace:
