@@ -44,7 +44,7 @@ ENTRYPOINT [ "bash" ]
 
 
 FROM base AS app
-ARG VERSION="0.1.2"
+ARG VERSION="0.1.4"
 WORKDIR /home/python
 VOLUME /input /output
 ADD https://github.com/Ethorbit/SoundPrompt/releases/download/v${VERSION}/soundprompt-${VERSION}-py3-none-any.whl .
