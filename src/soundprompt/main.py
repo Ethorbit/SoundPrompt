@@ -22,14 +22,14 @@
 # TODO: add VTT
 
 import asyncio
-
+import logging
 
 async def main_async():
-    import logging
-
+    from soundprompt.config.environment import setup_environment
     from soundprompt.config.toml.config import ConfigSystem
     from soundprompt.config import args
     from soundprompt.version import get_version
+    setup_environment()
     args = args.get_args()                     # noqa: E402
     cfg = ConfigSystem(args).config            # noqa: E402
     logging.basicConfig(level=logging.INFO)    # noqa: E402
@@ -56,8 +56,6 @@ async def main_async():
     from soundprompt.data import database
     from sentence_transformers import SentenceTransformer
     from pynput import keyboard
-
-    event_loop = asyncio.get_event_loop()
 
     device = get_device(cfg.general.device)
     logger.info(f"Requested device: {device}")
