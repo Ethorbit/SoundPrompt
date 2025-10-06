@@ -117,15 +117,17 @@ class Data:
         Saves the config's settings to the database collection
         """
 
+        config_json = self.config.to_json()
+
         collection.upsert(
             ids=[self.create_key(
                 self.library_directory,
                 "settings",
             )],
-            documents=[self.config.to_json()]
+            documents=[config_json]
         )
 
-        self.logger.debug(f"Updating settings: {self.config.to_json()}")
+        self.logger.debug(f"Updating settings: {config_json}")
 
     def collection_get_config(
         self,
