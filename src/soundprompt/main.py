@@ -23,17 +23,17 @@
 
 import asyncio
 import logging
+from soundprompt.config.environment import setup_environment
+from soundprompt.config.toml.config import ConfigSystem
+from soundprompt.config import args as arg_import
+from soundprompt.version import get_version
 
 async def main_async():
-    from soundprompt.config.environment import setup_environment
-    from soundprompt.config.toml.config import ConfigSystem
-    from soundprompt.config import args
-    from soundprompt.version import get_version
     setup_environment()
-    args = args.get_args()                     # noqa: E402
-    cfg = ConfigSystem(args).config            # noqa: E402
-    logging.basicConfig(level=logging.INFO)    # noqa: E402
-    logger = logging.getLogger(__name__)       # noqa: E402
+    args = arg_import.get_args()
+    cfg = ConfigSystem(args).config
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
 
     if args.version:
         print(get_version())
@@ -47,8 +47,10 @@ async def main_async():
         exit()
 
     print(get_version())
-    logger.info("Loading model..")  # noqa: E402 sentence_transformers: ~7s delay
+    logger.info("Loading model..")
 
+    # --- Lazy imports for heavy modules ---
+    # (sentence_transformers: ~7s delay)
     from soundprompt.sound import SoundPlayer
     from soundprompt.device import get_device
     from soundprompt.console import Console, CommandQueue
@@ -139,4 +141,4 @@ def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main_async())
+    main()

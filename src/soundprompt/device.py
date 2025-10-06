@@ -19,9 +19,6 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-import torch
-
-
 class NoCUDAError(Exception):
     """
     Exception raised when CUDA is requested, but it's unavailable
@@ -33,6 +30,7 @@ class NoCUDAError(Exception):
 
 
 def get_device(device: str | None = None) -> str:
+    import torch
     cuda_available = torch.cuda.is_available()
 
     if (

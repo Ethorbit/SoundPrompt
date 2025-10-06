@@ -20,9 +20,11 @@
 #
 
 from __future__ import annotations
-import chromadb
+from typing import TYPE_CHECKING
 from soundprompt.retrieval import retrieval
-from sentence_transformers import SentenceTransformer
+if TYPE_CHECKING:
+    import chromadb
+    from sentence_transformers import SentenceTransformer
 
 
 class Prompter:

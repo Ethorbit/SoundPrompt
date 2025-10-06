@@ -19,12 +19,14 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import numpy as np
-from torch import Tensor
-from chromadb import Collection, QueryResult
 from sentence_transformers import util
 from collections import defaultdict
-
+if TYPE_CHECKING:
+    from torch import Tensor
+    from chromadb import Collection, QueryResult
 
 def get_top_results(
     collection: Collection,

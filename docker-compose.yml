@@ -70,7 +70,8 @@ services:
     <<: [ *shared, *develop ]
     stdin_open: true
     tty: true
-
+    # See if locally downloaded model works w/o internet
+    network_mode: none
 
   app:
     profiles:
