@@ -117,13 +117,15 @@ class Data:
         Saves the config's settings to the database collection
         """
 
-        collection.update(
+        collection.upsert(
             ids=[self.create_key(
                 self.library_directory,
                 "settings",
             )],
             documents=[self.config.to_json()]
         )
+
+        self.logger.debug(f"Updating settings: {self.config.to_json()}")
 
     def collection_get_config(
         self,
@@ -137,15 +139,22 @@ class Data:
             include=["documents"]
         )
 
+        documents = item.get("documents", [])
         config = Config()
 
-        try:
-            config = Config.from_json(item["documents"][0])
-        except Exception as e:
-            self.logger.error(f"Failed to get config - {e}")
+        if documents:
+            try:
+                config = Config.from_json(documents[0])
+            except Exception as e:
+                self.logger.error(f"Failed to parse config - {e}")
+            else:
+                if item["ids"]:
+                    return config
         else:
-            if item["ids"]:
-                return config
+            self.logger.debug(
+                "No saved config for this library."
+                " Is this the first time saving?"
+            )
 
         return config
 
