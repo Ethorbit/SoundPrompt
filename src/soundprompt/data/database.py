@@ -203,8 +203,10 @@ class Data:
         if tag_data.tags is None:
             tag_data.tags = self.collection_get_file_tags(
                 collection,
-                tags_file_path=tag_data.file_path,
-                tags_file_name=tag_data.file_name
+                TagData(
+                    file_name=tag_data.file_name,
+                    file_path=tag_data.file_path
+                )
             )
 
         for tag in tag_data.tags:
