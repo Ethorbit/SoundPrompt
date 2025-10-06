@@ -37,7 +37,7 @@ class General:
     device: the Torch device to use for AI. "cuda" for fast GPU, or "cpu"
     """
 
-    model_name: str = "all-MiniLM-L6-v2"
+    model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
     device: str = "cpu"
 
 
