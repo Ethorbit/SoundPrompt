@@ -28,7 +28,7 @@ class SoundPlayer:
     def __init__(self):
         pass
 
-    def play(self, file: str) -> None:
+    def play(self, file: str, blocking: bool) -> None:
         segment = AudioSegment.from_file(file)
         sample_rate = segment.frame_rate
         byte_data = segment.raw_data
@@ -43,7 +43,8 @@ class SoundPlayer:
 
         sounddevice.play(
             samples,
-            samplerate=sample_rate
+            samplerate=sample_rate,
+            blocking=blocking
         )
 
     def stop(self) -> None:

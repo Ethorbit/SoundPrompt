@@ -94,12 +94,16 @@ async def main_async():
         prompter = Prompter(model=model, collection=collection)
         sound_player = SoundPlayer()
 
-        def enter_prompt(prompt: str):
+        def enter_prompt(prompt: str, interactive: bool):
             file = prompter.prompt(prompt)
 
             try:
                 logger.debug(f"Prompted {file}")
-                sound_player.play(file)
+
+                if interactive:
+                    sound_player.play(file, blocking=False)
+                else:
+                    sound_player.play(file, blocking=True)
             except Exception as e:
                 logger.error(
                     f"Failed to play sound - {e}"
@@ -113,7 +117,7 @@ async def main_async():
                 logger.error(f"Failed to stop sound - {e}")
 
         if args.prompt:
-            enter_prompt(args.prompt)
+            enter_prompt(args.prompt, interactive=False)
         else:
             keyboard.GlobalHotKeys({
                 cfg.hotkeys.stop_sound:
@@ -122,7 +126,7 @@ async def main_async():
 
             command_queue = CommandQueue()
             command_queue.event.subscribe(
-                lambda cmd: enter_prompt(cmd)
+                lambda cmd: enter_prompt(cmd, interactive=True)
             )
             console = Console(command_queue)
 
