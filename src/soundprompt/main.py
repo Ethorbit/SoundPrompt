@@ -138,7 +138,26 @@ async def main_async():
 
 
 def main():
-    asyncio.run(main_async())
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(main_async())
+    except KeyboardInterrupt:
+        print("\nReceived Ctrl+C, exiting gracefully.")
+    finally:
+        # Cancel all remaining tasks cleanly
+        tasks = asyncio.all_tasks(loop)
+        for task in tasks:
+            task.cancel()
+        try:
+            loop.run_until_complete(
+                asyncio.gather(*tasks, return_exceptions=True)
+            )
+        except Exception:
+            pass
+        finally:
+            loop.close()
 
 
 if __name__ == "__main__":
