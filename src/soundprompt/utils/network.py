@@ -19,12 +19,13 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-from os import environ
-from soundprompt.utils.network import has_internet
+import socket
 
 
-def setup_environment():
-    environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
-
-    if not has_internet():
-        environ["HF_HUB_OFFLINE"] = "1"
+def has_internet(timeout: float = 3.0) -> bool:
+    try:
+        # Try connecting to Google DNS (8.8.8.8) on port 53
+        socket.create_connection(("8.8.8.8", 53), timeout=timeout)
+        return True
+    except OSError:
+        return False

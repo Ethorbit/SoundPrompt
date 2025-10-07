@@ -26,7 +26,7 @@ import logging
 from soundprompt.config.environment import setup_environment
 from soundprompt.config.toml.config import ConfigSystem
 from soundprompt.config import args as arg_import
-from soundprompt.version import get_version
+from soundprompt.utils.version import get_version
 
 async def main_async():
     setup_environment()
