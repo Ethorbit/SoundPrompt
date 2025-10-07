@@ -21,7 +21,7 @@ If not, see <https://www.gnu.org/licenses/>.
 
 [![Sponsor](https://img.shields.io/badge/Sponsor-PayPal-blue)](https://www.paypal.me/Ethorbit)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20macOS%2C%20Linux-blue)
+![Platforms](https://img.shields.io/badge/platforms-Windows%2C%20Mac%2C%20Linux-blue)
 [![PyPI version](https://img.shields.io/pypi/v/soundprompt.svg)](https://pypi.org/project/soundprompt/)
 [![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://github.com/Ethorbit/SoundPrompt/wiki)
 [![issues](https://img.shields.io/github/issues/Ethorbit/SoundPrompt)](https://github.com/Ethorbit/SoundPrompt/issues?q=is%3Aopen+is%3Aissue)
