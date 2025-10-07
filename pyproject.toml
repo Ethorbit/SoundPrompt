@@ -25,7 +25,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "soundprompt"
-version = "0.1.4"
+version = "0.1.5"
 description = "Your sounds, triggered by AI prompts"
 readme = "README.md"
 authors = [
