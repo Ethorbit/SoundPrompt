@@ -100,10 +100,10 @@ async def main_async():
             try:
                 logger.debug(f"Prompted {file}")
 
-                if interactive:
-                    sound_player.play(file, blocking=False)
-                else:
-                    sound_player.play(file, blocking=True)
+                sound_player.play(file)
+
+                if not interactive:
+                    sound_player.wait()
             except Exception as e:
                 logger.error(
                     f"Failed to play sound - {e}"
@@ -114,6 +114,7 @@ async def main_async():
             try:
                 sound_player.stop()
             except Exception as e:
+                sound_player.stop()
                 logger.error(f"Failed to stop sound - {e}")
 
         if args.prompt:
