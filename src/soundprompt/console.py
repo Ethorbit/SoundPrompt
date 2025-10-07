@@ -21,7 +21,7 @@
 
 import asyncio
 from signal import signal, SIGINT, SIG_IGN
-from soundprompt.event import Event
+from soundprompt.concurrency.event import Event
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.patch_stdout import patch_stdout

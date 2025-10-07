@@ -51,8 +51,8 @@ async def main_async():
 
     # --- Lazy imports for heavy modules ---
     # (sentence_transformers: ~7s delay)
-    from soundprompt.sound import SoundPlayer
-    from soundprompt.device import get_device
+    from soundprompt.audio.sound import SoundPlayer
+    from soundprompt.utils.device import get_device
     from soundprompt.console import Console, CommandQueue
     from soundprompt.retrieval.prompter import Prompter
     from soundprompt.data import database
